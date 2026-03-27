@@ -1,0 +1,52 @@
+{
+  "name": "ekonstat-api",
+  "version": "1.0.0",
+  "description": "Tool for consolidating economic and financial data in Macedonia",
+  "homepage": "https://github.com/nkvtd/EkonStat-API#readme",
+  "bugs": {
+    "url": "https://github.com/nkvtd/EkonStat-API/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nkvtd/EkonStat-API.git"
+  },
+  "license": "MIT",
+  "author": "nkvtd",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "run": "tsx src/index.ts",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.9",
+    "@hono/zod-validator": "^0.7.6",
+    "axios": "^1.13.3",
+    "axios-cookiejar-support": "^6.0.5",
+    "croner": "^10.0.1",
+    "cronstrue": "^3.11.0",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.11.6",
+    "hono-openapi": "^1.2.0",
+    "node-cron": "^4.2.1",
+    "p-queue": "^9.1.0",
+    "pg": "^8.17.2",
+    "winston": "^3.19.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.16.0",
+    "drizzle-kit": "^0.31.8",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [],
+  "overrides": {
+    "esbuild": "^0.25.0"
+  }
+}
