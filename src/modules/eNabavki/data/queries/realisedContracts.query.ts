@@ -1,102 +1,152 @@
-import type {DbOrTx} from "../../../../shared/types/Database.type"
+import { and, asc, eq, gt, sql } from 'drizzle-orm';
+import type { DbOrTx } from '../../../../shared/types/Database.type.js';
+import type { PaginatedFiltersQuery } from '../../../../shared/types/PaginatedFiltersQuery.type.js';
 import {
-    realisedTable,
     type RealisedInsert,
-    type RealisedItem
-} from "../schema";
-import {and, asc, eq, gt, sql} from "drizzle-orm";
-import {resolveInstitutionAndContractorIds} from "./helpers/idResolver";
-import {buildWhereClause} from "./helpers/whereClauseBuilder";
+    type RealisedItem,
+    realisedTable,
+} from '../schema.js';
+import { resolveInstitutionAndContractorIds } from './helpers/idResolver.js';
+import { buildWhereClause } from './helpers/whereClauseBuilder.js';
 
 export async function insertRealisedContracts(
     db: DbOrTx,
-    contracts: RealisedInsert[]
+    contracts: RealisedInsert[],
 ): Promise<RealisedItem[]> {
+    if (contracts.length === 0) return [];
+
     return await db.transaction(async (tx) => {
-        const { institutionIds, contractorIds } = 
-            await resolveInstitutionAndContractorIds(tx, 
-                contracts.map(c => c.contractingInstitution),
-                contracts.map(c => c.contractor)
+        const { institutionIds, contractorIds } =
+            await resolveInstitutionAndContractorIds(
+                tx,
+                contracts.map((c) => c.contractingInstitution),
+                contracts.map((c) => c.contractor),
             );
 
-        contracts = contracts.map(c => ({
+        contracts = contracts.map((c) => ({
             ...c,
-            contractingInstitutionId: institutionIds.get(c.contractingInstitution!),
-            contractorId: c.contractor ? (contractorIds.get(c.contractor) ?? null) : null
+            contractingInstitutionId: institutionIds.get(
+                // biome-ignore lint/style/noNonNullAssertion: <contractingInstitution is required for realised contracts, and should have been validated at this point>
+                c.contractingInstitution!,
+            ),
+            contractorId: c.contractor
+                ? (contractorIds.get(c.contractor) ?? null)
+                : null,
         }));
-        
+
         const inserted = await tx
             .insert(realisedTable)
             .values(contracts)
             .onConflictDoNothing({
-                target: realisedTable.internalId
+                target: realisedTable.internalId,
             })
             .returning();
 
+        if (inserted.length === 0) return [];
+
+        const insertedIds = inserted.map((c) => c.id);
+        const insertedIdsSql = sql.join(
+            insertedIds.map((id) => sql`${id}`),
+            sql`, `,
+        );
+
         await tx.execute(sql`
             UPDATE e_nabavki.awarded_contracts ac
-            SET realised_contract_id = rc.id
-            FROM e_nabavki.realised_contracts rc
+            SET realised_contract_id = (
+                SELECT rc.id
+                FROM e_nabavki.realised_contracts rc
+                WHERE rc.id IN (${insertedIdsSql})
+                    AND ac.contracting_institution_id IS NOT DISTINCT FROM rc.contracting_institution_id
+                    AND ac.contractor_id IS NOT DISTINCT FROM rc.contractor_id
+                    AND ac.original_contract_value IS NOT DISTINCT FROM rc.assigned_contract_value
+                    AND ac.subject IS NOT DISTINCT FROM rc.subject
+                ORDER BY rc.id ASC
+                LIMIT 1
+            )
             WHERE ac.realised_contract_id IS NULL
-              AND ac.contracting_institution_id = rc.contracting_institution_id
-              AND ac.contractor_id = rc.contractor_id
-              AND ac.original_contract_value = rc.assigned_contract_value
-              AND ac.subject = rc.subject;
+                AND EXISTS (
+                    SELECT 1
+                    FROM e_nabavki.realised_contracts rc
+                    WHERE rc.id IN (${insertedIdsSql})
+                        AND ac.contracting_institution_id IS NOT DISTINCT FROM rc.contracting_institution_id
+                        AND ac.contractor_id IS NOT DISTINCT FROM rc.contractor_id
+                        AND ac.original_contract_value IS NOT DISTINCT FROM rc.assigned_contract_value
+                        AND ac.subject IS NOT DISTINCT FROM rc.subject
+                );
         `);
-        
+
         return inserted;
     });
 }
 
 export async function getRealisedContracts(
     db: DbOrTx,
-    query: any
+    query: PaginatedFiltersQuery,
 ): Promise<RealisedItem[] | []> {
     const { cursor, pageSize, ...filters } = query;
 
-    let filterConditions = await buildWhereClause(filters, {
-        institutionId:              { column: realisedTable.contractingInstitutionId, operator: "eq" },
-        contractorId:               { column: realisedTable.contractorId, operator: "eq" },
-        subject:                    { column: realisedTable.subject, operator: "ilike" },
-        typeContractId:             { column: realisedTable.typeContractId, operator: "eq" },
-        typeProcedureId:            { column: realisedTable.typeProcedureId, operator: "eq" },
-        typeOfferId:                { column: realisedTable.typeOfferId, operator: "eq" },
-        typeFrameworkAgreementId:   { column: realisedTable.typeFrameworkAgreementId, operator: "eq" },
-        lessThanContractValue:      { column: realisedTable.assignedContractValue, operator: "lte" },
-        moreThanContractValue:      { column: realisedTable.assignedContractValue, operator: "gte" },
-        lessThanRealisedValue:      { column: realisedTable.realisedContractValue, operator: "lte" },
-        moreThanRealisedValue:      { column: realisedTable.realisedContractValue, operator: "gte" },
-        deliveryDate:               { column: realisedTable.deliveryDate, operator: "gte" },
+    const filterConditions = await buildWhereClause(filters, {
+        institutionId: {
+            column: realisedTable.contractingInstitutionId,
+            operator: 'eq',
+        },
+        contractorId: { column: realisedTable.contractorId, operator: 'eq' },
+        subject: { column: realisedTable.subject, operator: 'ilike' },
+        typeContractId: {
+            column: realisedTable.typeContractId,
+            operator: 'eq',
+        },
+        typeProcedureId: {
+            column: realisedTable.typeProcedureId,
+            operator: 'eq',
+        },
+        typeOfferId: { column: realisedTable.typeOfferId, operator: 'eq' },
+        typeFrameworkAgreementId: {
+            column: realisedTable.typeFrameworkAgreementId,
+            operator: 'eq',
+        },
+        lessThanAssignedValue: {
+            column: realisedTable.assignedContractValue,
+            operator: 'lte',
+        },
+        moreThanAssignedValue: {
+            column: realisedTable.assignedContractValue,
+            operator: 'gte',
+        },
+        lessThanRealisedValue: {
+            column: realisedTable.realisedContractValue,
+            operator: 'lte',
+        },
+        moreThanRealisedValue: {
+            column: realisedTable.realisedContractValue,
+            operator: 'gte',
+        },
+        deliveryDate: { column: realisedTable.deliveryDate, operator: 'gte' },
     });
-    
-    const whereConditions = 
-        and(
-            cursor ? gt(realisedTable.id, cursor) : undefined,
-            ...filterConditions
-        )
+
+    const whereConditions = and(
+        cursor ? gt(realisedTable.id, cursor) : undefined,
+        ...filterConditions,
+    );
 
     const contracts = await db
         .select()
         .from(realisedTable)
-        .where(
-            whereConditions
-        )
+        .where(whereConditions)
         .limit(pageSize)
         .orderBy(asc(realisedTable.id));
 
-    return contracts || [];
+    return contracts;
 }
 
 export async function getRealisedContractById(
     db: DbOrTx,
-    id: number
+    id: number,
 ): Promise<RealisedItem | null> {
     const [contract] = await db
         .select()
         .from(realisedTable)
-        .where(
-            eq(realisedTable.id, id)
-        )
+        .where(eq(realisedTable.id, id))
         .limit(1);
 
     return contract || null;

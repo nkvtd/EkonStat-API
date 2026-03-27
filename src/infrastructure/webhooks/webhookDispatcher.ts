@@ -1,38 +1,90 @@
-import axios from "axios";
-import {logger} from "../logging/logger";
-import eventBus from "./events/eventBus";
-import {webhooksConfig} from "../../../webhooks.config";
-import {mapEventToEmbed} from "./discordEmbed";
+import axios from 'axios';
+import pMap from 'p-map';
+import { logger } from '../logging/logger.js';
+import eventBus from './events/eventBus.js';
+import { webhookRegistry } from './webhookRegistry.js';
 
-export async function registerWebhooks() {
-    for (const [event, urls] of Object.entries(webhooksConfig)) {
-        eventBus.on(event, async (payload: any) => {
-            for (const item of payload) {
-                await dispatchWebhook(event, urls, item);
+export function registerWebhooks<TDto>() {
+    for (const [event, urls] of Object.entries(webhookRegistry)) {
+        logger.info(
+            `[Scheduler] [Webhook] Registering ${urls.length} webhook(s) for event ${event}.`,
+        );
+
+        eventBus.on(event, async (payload: TDto[]) => {
+            logger.debug(
+                `[Scheduler]:[Webhook] Dispatching to ${urls.length} webhook(s) for event ${event}.`,
+            );
+
+            const { successCount, failCount } = await dispatchToWebhooks(
+                event,
+                urls,
+                payload,
+            );
+
+            if (failCount === 0) {
+                logger.debug(
+                    `[Scheduler]:[Webhook] Dispatch for event ${event} completed successfully for all webhooks.`,
+                );
+            } else {
+                logger.debug(
+                    `[Scheduler]:[Webhook] Dispatch for event ${event} partially completed: ${successCount} succeeded, ${failCount} failed.`,
+                );
             }
-
-            logger.info(`Payload for event ${event} dispatched to webhooks successfully`);
         });
-        logger.info(`Registered ${urls.length} webhook(s) for event ${event}`);
+
+        logger.info(
+            `[Scheduler]:[Webhook] Registered ${urls.length} webhook(s) for event ${event}.`,
+        );
     }
 }
 
-async function dispatchWebhook(event: string, urls: string[], item: any) {
-    const embed = mapEventToEmbed(event, item);
-    
-    for (const url of urls) {
-        logger.debug(`Dispatching event ${event} @ webhook ${url}`)
-        try {
-             await axios.post(url, {
-                     embeds: [embed]
-                 }, {
-                 headers: {
-                     'Content-Type': 'application/json'
-                 }
-             });
+async function dispatchToWebhooks<TDto>(
+    event: string,
+    urls: string[],
+    payload: TDto[],
+) {
+    const result = await pMap(
+        urls,
+        (url) => dispatchToWebhook(event, url, payload),
+        {
+            concurrency: 3,
+        },
+    );
 
-        } catch (error: any) {
-            logger.error(`Dispatching event ${event} @ webhook ${url} failed: ${error.message}`, { stack: error.stack });
-        }
+    const successCount = result.filter(Boolean).length;
+    const failCount = result.length - successCount;
+
+    return {
+        successCount,
+        failCount,
+    };
+}
+
+async function dispatchToWebhook<TDto>(
+    event: string,
+    url: string,
+    payload: TDto[],
+) {
+    try {
+        await axios.post(
+            url,
+            {
+                data: payload,
+                meta: {
+                    event: event,
+                    dispatchedAt: new Date().toISOString(),
+                },
+            },
+            {
+                timeout: 5000,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            },
+        );
+
+        return true;
+    } catch {
+        return false;
     }
 }

@@ -1,50 +1,47 @@
-import type {AwardedItem} from "../schema";
-import {toNumber} from "../../util/numbers";
+import { toNumber } from '../../util/numbers.js';
+import type { AwardedItem } from '../schema.js';
 
 export type AwardedDTO = {
     id: number;
     processNumber: string | null;
-    realisedContractId: number | null;
     numChanges: number | null;
     institution: {
         id: number | null;
         name: string | null;
-    },
+    };
     contractor: {
         id: number | null;
         name: string | null;
-    },
+    };
     smallContract: boolean | null;
     subject: string | null;
     contractType: {
         id: number | null;
         name: string | null;
-    },
+    };
     procedureType: {
         id: number | null;
         name: string | null;
-    },
+    };
     offerType: {
         id: number | null;
         name: string | null;
-    },
+    };
     frameworkAgreementType: {
         id: number | null;
         name: string | null;
-    },
+    };
     estimatedContractValue: number | null;
     originalContractValue: number | null;
     assignedContractValue: number | null;
     assignmentDate: string | null;
     latestChangeDate: string | null;
-}
-
+};
 
 export function toAwardedContractDTO(contract: AwardedItem): AwardedDTO {
-    return ({
+    return {
         id: contract.id,
         processNumber: contract.processNumber,
-        realisedContractId: contract.realisedContractId,
         numChanges: contract.numChanges,
         institution: {
             id: contract.contractingInstitutionId,
@@ -52,35 +49,36 @@ export function toAwardedContractDTO(contract: AwardedItem): AwardedDTO {
         },
         contractor: {
             id: contract.contractorId,
-            name: contract.contractor
+            name: contract.contractor,
         },
         smallContract: contract.smallContract,
         subject: contract.subject,
         contractType: {
             id: contract.typeContractId,
-            name: contract.typeContract
+            name: contract.typeContract,
         },
         procedureType: {
             id: contract.typeProcedureId,
-            name: contract.typeProcedure
+            name: contract.typeProcedure,
         },
         offerType: {
             id: contract.typeOfferId,
-            name: contract.typeOffer
+            name: contract.typeOffer,
         },
         frameworkAgreementType: {
             id: contract.typeFrameworkAgreementId,
-            name: contract.typeFrameworkAgreement
+            name: contract.typeFrameworkAgreement,
         },
         estimatedContractValue: toNumber(contract.estimatedContractValue),
         originalContractValue: toNumber(contract.originalContractValue),
         assignedContractValue: toNumber(contract.assignedContractValue),
         assignmentDate: contract.assignmentDate,
-        latestChangeDate: contract.latestChangeDate
-    });
+        latestChangeDate: contract.latestChangeDate,
+    };
 }
 
-export function toAwardedContractDTOList(contracts: AwardedItem[]): AwardedDTO[] {
+export function toAwardedContractDTOList(
+    contracts: AwardedItem[],
+): AwardedDTO[] {
     return contracts.map(toAwardedContractDTO);
 }
-

@@ -1,8 +1,8 @@
-import {db} from "../../database/db";
-import {createMiddleware} from "hono/factory";
-import type {Env} from "../Env.type";
+import { createMiddleware } from 'hono/factory';
+import { db } from '../../database/db.js';
+import type { Env } from '../Env.type.js';
 
 export const dbMiddleware = createMiddleware<Env>(async (c, next) => {
-    c.set('database', db)
+    c.set('database', db);
     await next();
 });

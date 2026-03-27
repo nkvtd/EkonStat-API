@@ -4,4 +4,5 @@ export const ENABAVKI_EVENTS = {
     CHANGES_IN_AWARDED_CONTRACTS: 'changes-in-awarded-contracts',
 } as const;
 
-export type ENABAVKI_EVENTS_TYPE = typeof ENABAVKI_EVENTS[keyof typeof ENABAVKI_EVENTS];
+export type ENABAVKI_EVENTS_TYPE =
+    (typeof ENABAVKI_EVENTS)[keyof typeof ENABAVKI_EVENTS];

@@ -1,5 +1,5 @@
-import type {ChangesInAwardedItem} from "../schema";
-import {toNumber} from "../../util/numbers";
+import { toNumber } from '../../util/numbers.js';
+import type { ChangesInAwardedItem } from '../schema.js';
 
 export type ChangesInAwardedDTO = {
     id: number;
@@ -7,25 +7,26 @@ export type ChangesInAwardedDTO = {
     institution: {
         id: number | null;
         name: string | null;
-    },
+    };
     contractor: {
         id: number | null;
         name: string | null;
-    },
+    };
     subject: string | null;
-    changeReason: { 
-        id: number | null; 
+    changeReason: {
+        id: number | null;
         name: string | null;
-    },
+    };
     assignedContractValue: number | null;
     updatedContractValue: number | null;
     differenceInValue: number | null;
     changeDate: string | null;
-}
+};
 
-
-export function toChangesInAwardedContractDTO(contract: ChangesInAwardedItem): ChangesInAwardedDTO {
-    return ({
+export function toChangesInAwardedContractDTO(
+    contract: ChangesInAwardedItem,
+): ChangesInAwardedDTO {
+    return {
         id: contract.id,
         processNumber: contract.processNumber,
         institution: {
@@ -34,20 +35,22 @@ export function toChangesInAwardedContractDTO(contract: ChangesInAwardedItem): C
         },
         contractor: {
             id: contract.contractorId,
-            name: contract.contractor
+            name: contract.contractor,
         },
         subject: contract.subject,
         changeReason: {
             id: contract.changeReasonId,
-            name: contract.changeReason
+            name: contract.changeReason,
         },
         assignedContractValue: toNumber(contract.assignedContractValue),
         updatedContractValue: toNumber(contract.updatedContractValue),
         differenceInValue: toNumber(contract.differenceInValue),
-        changeDate: contract.changeDate
-    });
+        changeDate: contract.changeDate,
+    };
 }
 
-export function toChangesInAwardedContractDTOList(contracts: ChangesInAwardedItem[]): ChangesInAwardedDTO[] {
+export function toChangesInAwardedContractDTOList(
+    contracts: ChangesInAwardedItem[],
+): ChangesInAwardedDTO[] {
     return contracts.map(toChangesInAwardedContractDTO);
 }

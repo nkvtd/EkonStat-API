@@ -1,5 +1,5 @@
 export function normaliseName(name: string | null | undefined): string | null {
-    if(!name) return null;
+    if (!name) return null;
 
     let s = name.normalize('NFKC').trim();
 

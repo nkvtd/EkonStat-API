@@ -1,9 +1,9 @@
 export const CONTRACT_TYPE_MAP: Record<string, string> = {
-    '' : 'Сите',
-    '1' : 'Стоки',
-    '2' : 'Услуги',
-    '3' : 'Работи'
-}
+    '': 'Сите',
+    '1': 'Стоки',
+    '2': 'Услуги',
+    '3': 'Работи',
+};
 
 export const PROCEDURE_TYPE_MAP: Record<string, string> = {
     '': 'Сите', // ALL
@@ -26,15 +26,15 @@ export const PROCEDURE_TYPE_MAP: Record<string, string> = {
     '17': 'Посебни услуги', // SpecialServices
     '18': 'Член 24 - Јавни набавки меѓу договорни органи', // Statement24
     '19': '/',
-    '20': 'Посебни услуги (под 10.000/20.000 евра)'  // SpecialServicesForQuartalEvidence
-}
+    '20': 'Посебни услуги (под 10.000/20.000 евра)', // SpecialServicesForQuartalEvidence
+};
 
 export const OFFER_TYPE_MAP: Record<string, string> = {
     '1': 'Најниска цена', //LOWESTPRICE
     '2': 'Најдобра економска понуда', //BESTECONOMICOFFER
     '3': 'Ништо', //NONE
     '4': 'Трошоците со користење на пристапот на исплатливост', //COSTEFFECTIVENESS
-    '5': 'Најдобар сооднос помеѓу цената и квалитетот' //PRICEQUALITYRATIO
+    '5': 'Најдобар сооднос помеѓу цената и квалитетот', //PRICEQUALITYRATIO
 };
 
 export const FRAMEWORK_AGREEMENT_TYPE: Record<string, string> = {
@@ -42,11 +42,11 @@ export const FRAMEWORK_AGREEMENT_TYPE: Record<string, string> = {
     '1': 'Еден економски оператор', //OneEconomicOperator
     '2': 'Повеќе економски оператори (повеќе кругови)', //MoreEconomicOperatorsMultipleCircle
     '3': 'Повеќе економски оператори (еден круг)', //MoreEconomicOperatorsOneCircle
-    '4': 'Делумно повеќе економски оператори (еден круг)' //PartialMoreEconomicOperatorsOneCircle
+    '4': 'Делумно повеќе економски оператори (еден круг)', //PartialMoreEconomicOperatorsOneCircle
 };
 
 export const CHANGE_REASON_MAP: Record<string, string> = {
     '1': 'Промена на времетраење', //ChangeOfDuration
     '2': 'Промена на вредност', //ChangeOfValue
     '3': 'Промена на времетраење и вредност', //ChangeOfDurationAndValue
-}
+};

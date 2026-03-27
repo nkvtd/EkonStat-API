@@ -1,15 +1,17 @@
 export function buildBasePayload(config: {
-    orderColumn: string,
-    columns: string[],
-    specialColumns?: string[],
-    discriminator: Record<string, any>
-
+    start: number;
+    length: number;
+    draw: number;
+    orderColumn: string;
+    columns: string[];
+    specialColumns?: string[];
+    discriminator: Record<string, unknown>;
 }) {
     const params = new URLSearchParams();
 
-    params.append('draw', '1');
-    params.append('start', '0');
-    params.append('length', '50'); // response limit
+    params.append('draw', config.draw.toString());
+    params.append('start', config.start.toString());
+    params.append('length', config.length.toString());
     params.append('search[value]', '');
     params.append('search[regex]', 'false');
     params.append('order[0][column]', config.orderColumn);

@@ -12,7 +12,8 @@
 	"formatter": {
         "includes": ["src/**/*.ts"],
 		"enabled": true,
-		"indentStyle": "tab"
+		"indentStyle": "space",
+		"indentWidth": 4
 	},
 	"linter": {
         "includes": ["src/**/*.ts"],

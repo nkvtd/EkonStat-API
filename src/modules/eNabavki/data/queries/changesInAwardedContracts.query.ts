@@ -1,46 +1,64 @@
-import type {DbOrTx} from "../../../../shared/types/Database.type"
+import { and, asc, eq, gt, sql } from 'drizzle-orm';
+import type { DbOrTx } from '../../../../shared/types/Database.type.js';
+import type { PaginatedFiltersQuery } from '../../../../shared/types/PaginatedFiltersQuery.type.js';
 import {
-    changesInAwardedTable,
     type ChangesInAwardedInsert,
-    type ChangesInAwardedItem
-} from "../schema";
-import {resolveInstitutionAndContractorIds} from "./helpers/idResolver";
-import {eq, sql} from "drizzle-orm";
+    type ChangesInAwardedItem,
+    changesInAwardedTable,
+} from '../schema.js';
+import { resolveInstitutionAndContractorIds } from './helpers/idResolver.js';
 
 export async function insertChangesInAwardedContracts(
     db: DbOrTx,
-    changes: ChangesInAwardedInsert[]
+    changes: ChangesInAwardedInsert[],
 ): Promise<ChangesInAwardedItem[]> {
+    if (changes.length === 0) return [];
+
     return await db.transaction(async (tx) => {
         const { institutionIds, contractorIds } =
-            await resolveInstitutionAndContractorIds(tx,
-                changes.map(c => c.contractingInstitution),
-                changes.map(c => c.contractor)
+            await resolveInstitutionAndContractorIds(
+                tx,
+                changes.map((c) => c.contractingInstitution),
+                changes.map((c) => c.contractor),
             );
 
-        changes = changes.map(c => ({
+        changes = changes.map((c) => ({
             ...c,
-            contractingInstitutionId: institutionIds.get(c.contractingInstitution!),
-            contractorId: c.contractor ? (contractorIds.get(c.contractor) ?? null) : null
+            contractingInstitutionId: institutionIds.get(
+                // biome-ignore lint/style/noNonNullAssertion: <contractingInstitution is required for changes in awarded contracts, and should have been validated at this point>
+                c.contractingInstitution!,
+            ),
+            contractorId: c.contractor
+                ? (contractorIds.get(c.contractor) ?? null)
+                : null,
         }));
-        
+
         const inserted = await tx
             .insert(changesInAwardedTable)
             .values(changes)
             .onConflictDoNothing({
-                target: changesInAwardedTable.internalId
+                target: changesInAwardedTable.internalId,
             })
             .returning();
+
+        if (inserted.length === 0) return [];
+
+        const insertedIds = inserted.map((c) => c.id);
+        const insertedIdsSql = sql.join(
+            insertedIds.map((id) => sql`${id}`),
+            sql`, `,
+        );
 
         await tx.execute(sql`
             UPDATE e_nabavki.changes_in_awarded_contracts cc
             SET awarded_contract_id = ac.id
             FROM e_nabavki.awarded_contracts ac
-            WHERE cc.awarded_contract_id IS NULL
-              AND cc.contracting_institution_id IS NOT DISTINCT FROM ac.contracting_institution_id
-              AND cc.contractor_id IS NOT DISTINCT FROM ac.contractor_id
-              AND cc.assigned_contract_value IS NOT DISTINCT FROM ac.original_contract_value
-              AND cc.subject IS NOT DISTINCT FROM ac.subject;
+            WHERE cc.id IN (${insertedIdsSql})
+                AND cc.awarded_contract_id IS NULL
+                AND cc.contracting_institution_id IS NOT DISTINCT FROM ac.contracting_institution_id
+                AND cc.contractor_id IS NOT DISTINCT FROM ac.contractor_id
+                AND cc.assigned_contract_value IS NOT DISTINCT FROM ac.original_contract_value
+                AND cc.subject IS NOT DISTINCT FROM ac.subject;
         `);
 
         await tx.execute(sql`
@@ -54,26 +72,39 @@ export async function insertChangesInAwardedContracts(
                     MAX(change_date) AS latest,
                     (ARRAY_AGG(updated_contract_value ORDER BY change_date DESC))[1] AS latest_value
                 FROM e_nabavki.changes_in_awarded_contracts
-                WHERE awarded_contract_id IS NOT NULL
+                WHERE awarded_contract_id = ANY(
+                    SELECT awarded_contract_id
+                    FROM e_nabavki.changes_in_awarded_contracts
+                    WHERE id IN (${insertedIdsSql})
+                        AND awarded_contract_id IS NOT NULL
+                )
                 GROUP BY awarded_contract_id
             ) agg
             WHERE ac.id = agg.awarded_contract_id;
         `);
-        
+
         return inserted;
     });
 }
 
 export async function getChangesForAwardedContractById(
-    db: DbOrTx, 
-    contractId: number
-): Promise<ChangesInAwardedItem[] | null> {
+    db: DbOrTx,
+    contractId: number,
+    query: PaginatedFiltersQuery,
+): Promise<ChangesInAwardedItem[] | []> {
+    const { cursor, pageSize } = query;
+
     const changes = await db
         .select()
         .from(changesInAwardedTable)
         .where(
-            eq(changesInAwardedTable.awardedContractId, contractId)
-        );
-    
-    return changes.length > 0 ? changes : null;
+            and(
+                cursor ? gt(changesInAwardedTable.id, cursor) : undefined,
+                eq(changesInAwardedTable.awardedContractId, contractId),
+            ),
+        )
+        .limit(pageSize)
+        .orderBy(asc(changesInAwardedTable.id));
+
+    return changes;
 }
