@@ -7,7 +7,7 @@ import { webhookRegistry } from './webhookRegistry.js';
 export function registerWebhooks<TDto>() {
     for (const [event, urls] of Object.entries(webhookRegistry)) {
         logger.info(
-            `[Scheduler] [Webhook] Registering ${urls.length} webhook(s) for event ${event}.`,
+            `[Scheduler]:[Webhook] Registering ${urls.length} webhook(s) for event ${event}.`,
         );
 
         eventBus.on(event, async (payload: TDto[]) => {

@@ -1,6 +1,7 @@
 # EkonStat-API
 
 [![Node.js >=20](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/postgresql-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## Table of Contents
@@ -32,11 +33,21 @@ The stack is built around Hono, Drizzle ORM, PostgreSQL, and worker processes.
 
 Run with Docker (recommended):
 
+1. Create local environment and secret files:
+
+```bash
+cp .env.example .env
+mkdir -p secrets
+openssl rand -base64 32 > secrets/database_password.txt
+```
+
+1. Start API + scheduler + bundled Postgres:
+
 ```bash
 docker compose up -d --build app scheduler postgres
 ```
 
-Then verify:
+3. Verify:
 
 ```bash
 curl http://localhost:8080/api/ping
@@ -187,17 +198,10 @@ npm run dev:backfiller
 
 If you only want continuous API + scheduled ingestion, skip dev:backfiller.
 
-> [!NOTE]
-> On some Windows setups with PowerShell execution-policy restrictions, use:
->
-> ```bash
-> cmd /c npm run <script>
-> ```
-
 ### Production Mode (containerized)
 
 Use this mode to run built artifacts inside containers.
-`DATABASE_URL` and `PORT` do not need to be set manually for this mode because they are already defined in `docker-compose.yml` for the container services.
+The compose setup is Postgres-first: API and workers depend on the bundled `postgres` service and build `DATABASE_URL` internally from `POSTGRES_USER`, `POSTGRES_DB`, and the mounted password secret.
 
 Run API + scheduler + database:
 
@@ -306,15 +310,22 @@ Use /api/contracts/reference to resolve supported enum-like identifiers.
 
 | Variable | Required (Local Dev) | Description |
 | --- | --- | --- |
-| DATABASE_URL | Yes | PostgreSQL connection string for API and workers |
+| DATABASE_URL | Yes | PostgreSQL connection string used for local development mode. |
 | PORT | No | API port (defaults to 8080) |
 | REALISED_CONTRACTS_WEBHOOK_X | No | Webhook URLs for newly discovered realised contracts |
 | AWARDED_CONTRACTS_WEBHOOK_X | No | Webhook URLs for newly discovered awarded contracts |
 | CHANGES_IN_AWARDED_CONTRACTS_WEBHOOK_X | No | Webhook URLs for newly discovered contract changes |
 
-When running with Docker Compose, `DATABASE_URL` and `PORT` are injected by service configuration, so they are only required when running in local development mode.
+When running with Docker Compose, service startup always builds a connection string from `POSTGRES_USER`, `POSTGRES_DB`, and the secret mounted at `/run/secrets/database_password`.
 
-Webhook variables are collected by prefix. You can register multiple endpoints by numbering with a trailing _X pattern (for example _1, _2, _3, ... _n).
+For local compose runs, ensure the secret file exists:
+
+```bash
+mkdir -p secrets
+openssl rand -base64 32 > secrets/database_password.txt
+```
+
+Webhook variables are collected by prefix. You can register multiple endpoints by numbering with a trailing _X pattern (for example _1, _2, _3, . . . , _n).
 
 ```env
 REALISED_CONTRACTS_WEBHOOK_1="https://example.com/hooks/realised-a"

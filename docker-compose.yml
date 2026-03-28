@@ -1,0 +1,123 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD_FILE: /run/secrets/database_password
+      POSTGRES_DB: ekonstat-db
+    secrets:
+      - database_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/infrastructure/database/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        if [ ! -f /run/secrets/database_password ]; then
+          echo "/run/secrets/database_password is missing." >&2
+          exit 1
+        fi
+        DB_PASSWORD="$$(cat /run/secrets/database_password)"
+        export DATABASE_URL="postgresql://$${POSTGRES_USER:-postgres}:$${DB_PASSWORD}@postgres:5432/$${POSTGRES_DB:-ekonstat-db}"
+        exec npm run start:app
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ekonstat-db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      PORT: ${PORT:-8080}
+    secrets:
+      - database_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8080/api/ready > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - "8080:8080"
+
+  scheduler:
+    container_name: scheduler
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        if [ ! -f /run/secrets/database_password ]; then
+          echo "/run/secrets/database_password is missing." >&2
+          exit 1
+        fi
+        DB_PASSWORD="$$(cat /run/secrets/database_password)"
+        export DATABASE_URL="postgresql://$${POSTGRES_USER:-postgres}:$${DB_PASSWORD}@postgres:5432/$${POSTGRES_DB:-ekonstat-db}"
+        exec npm run start:scheduler
+    restart: unless-stopped
+    env_file:
+      - path: .env
+    environment:
+      POSTGRES_DB: ekonstat-db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    secrets:
+      - database_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  backfiller:
+    container_name: backfiller
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        if [ ! -f /run/secrets/database_password ]; then
+          echo "/run/secrets/database_password is missing." >&2
+          exit 1
+        fi
+        DB_PASSWORD="$$(cat /run/secrets/database_password)"
+        export DATABASE_URL="postgresql://$${POSTGRES_USER:-postgres}:$${DB_PASSWORD}@postgres:5432/$${POSTGRES_DB:-ekonstat-db}"
+        exec npm run start:backfiller
+    restart: "no"
+    profiles:
+      - backfill
+    environment:
+      POSTGRES_DB: ekonstat-db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    secrets:
+      - database_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+
+secrets:
+  database_password:
+    file: ./secrets/database_password.txt
