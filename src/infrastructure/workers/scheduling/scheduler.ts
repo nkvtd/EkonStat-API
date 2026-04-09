@@ -30,19 +30,15 @@ export async function scheduleJobs() {
 
                         if (data.length === 0) {
                             logger.debug(
-                                `[Scheduler]:[${job.module}.${job.name}] Job execution completed with no new data.`,
+                                `[Scheduler]:[${job.module}.${job.name}] Job execution completed with no new data in ${Date.now() - start} ms`,
                             );
                         } else {
                             eventBus.emit(job.event, data);
 
                             logger.debug(
-                                `[Scheduler]:[${job.module}.${job.name}] Job execution completed with new data (${data.length} items).`,
+                                `[Scheduler]:[${job.module}.${job.name}] Job execution completed with new data (${data.length} items) in ${Date.now() - start} ms`,
                             );
                         }
-
-                        logger.info(
-                            `[Scheduler]:[${job.module}.${job.name}] Job execution completed in ${Date.now() - start} ms.`,
-                        );
                     } catch (error) {
                         logger.error(
                             `[Scheduler]:[${job.module}.${job.name}] Job execution failed:`,
