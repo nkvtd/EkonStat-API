@@ -120,7 +120,15 @@ export async function getActiveAwardedContracts(
             column: awardedTable.contractingInstitutionId,
             operator: 'eq',
         },
+        institution: {
+            column: awardedTable.contractingInstitution,
+            operator: 'contains',
+        },
         contractorId: { column: awardedTable.contractorId, operator: 'eq' },
+        contractor: {
+            column: awardedTable.contractor,
+            operator: 'contains',
+        },
         smallContract: { column: awardedTable.smallContract, operator: 'eq' },
         subject: { column: awardedTable.subject, operator: 'ilike' },
         typeContractId: { column: awardedTable.typeContractId, operator: 'eq' },

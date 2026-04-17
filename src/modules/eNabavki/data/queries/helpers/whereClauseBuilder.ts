@@ -1,6 +1,6 @@
-import { eq, gt, gte, ilike, lt, lte, type SQL } from 'drizzle-orm';
+import { eq, gt, gte, ilike, lt, lte, type SQL, sql } from 'drizzle-orm';
 
-type FilterOperator = 'eq' | 'ilike' | 'lte' | 'gte' | 'gt' | 'lt';
+type FilterOperator = 'eq' | 'ilike' | 'contains' | 'lte' | 'gte' | 'gt' | 'lt';
 
 type FilterMapping = Record<
     string,
@@ -31,6 +31,11 @@ export function buildWhereClause(
                 break;
             case 'ilike':
                 filterConditions.push(ilike(column as never, `%${value}%`));
+                break;
+            case 'contains':
+                filterConditions.push(
+                    sql`public.my_unaccent(lower(${column as never}::text)) LIKE '%' || public.my_unaccent(lower(CAST(${String(value)} AS text))) || '%'`,
+                );
                 break;
             case 'lte':
                 filterConditions.push(lte(column as never, value as never));

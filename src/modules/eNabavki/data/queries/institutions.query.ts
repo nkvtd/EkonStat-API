@@ -37,7 +37,7 @@ export async function getInstitutions(
     const { cursor, pageSize, ...filters } = query;
 
     const filterConditions = await buildWhereClause(filters, {
-        name: { column: institutionsTable.name, operator: 'ilike' },
+        name: { column: institutionsTable.name, operator: 'contains' },
     });
 
     const whereConditions = and(

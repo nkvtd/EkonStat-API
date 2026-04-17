@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
     boolean,
     index,
@@ -11,10 +12,19 @@ import {
 
 const eNabavkiSchema = pgSchema('e_nabavki');
 
-export const institutionsTable = eNabavkiSchema.table('institutions', {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull().unique(),
-});
+export const institutionsTable = eNabavkiSchema.table(
+    'institutions',
+    {
+        id: serial('id').primaryKey(),
+        name: text('name').notNull().unique(),
+    },
+    (table) => [
+        index('institutions_name_trgm_idx').using(
+            'gin',
+            sql`((public.my_unaccent(lower(coalesce(${table.name}, '')))) gin_trgm_ops)`,
+        ),
+    ],
+);
 
 export const contractorsTable = eNabavkiSchema.table('contractors', {
     id: serial('id').primaryKey(),
@@ -62,6 +72,14 @@ export const realisedTable = eNabavkiSchema.table(
             table.contractorId,
             table.assignedContractValue,
             table.subject,
+        ),
+        index('realised_contracting_institution_trgm_idx').using(
+            'gin',
+            sql`((public.my_unaccent(lower(coalesce(${table.contractingInstitution}, '')))) gin_trgm_ops)`,
+        ),
+        index('realised_contractor_trgm_idx').using(
+            'gin',
+            sql`((public.my_unaccent(lower(coalesce(${table.contractor}, '')))) gin_trgm_ops)`,
         ),
     ],
 );
@@ -119,6 +137,14 @@ export const awardedTable = eNabavkiSchema.table(
             table.subject,
         ),
         index('awarded_realised_contract_id_idx').on(table.realisedContractId),
+        index('awarded_contracting_institution_trgm_idx').using(
+            'gin',
+            sql`((public.my_unaccent(lower(coalesce(${table.contractingInstitution}, '')))) gin_trgm_ops)`,
+        ),
+        index('awarded_contractor_trgm_idx').using(
+            'gin',
+            sql`((public.my_unaccent(lower(coalesce(${table.contractor}, '')))) gin_trgm_ops)`,
+        ),
     ],
 );
 

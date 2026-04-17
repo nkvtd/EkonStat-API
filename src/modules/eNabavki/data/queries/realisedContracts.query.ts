@@ -90,7 +90,15 @@ export async function getRealisedContracts(
             column: realisedTable.contractingInstitutionId,
             operator: 'eq',
         },
+        institution: {
+            column: realisedTable.contractingInstitution,
+            operator: 'contains',
+        },
         contractorId: { column: realisedTable.contractorId, operator: 'eq' },
+        contractor: {
+            column: realisedTable.contractor,
+            operator: 'contains',
+        },
         subject: { column: realisedTable.subject, operator: 'ilike' },
         typeContractId: {
             column: realisedTable.typeContractId,

@@ -15,6 +15,13 @@
       "when": 1774612046035,
       "tag": "0001_high_tomorrow_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776465735823,
+      "tag": "0002_wooden_sir_ram",
+      "breakpoints": true
     }
   ]
 }
