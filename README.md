@@ -20,6 +20,13 @@
 ## Introduction
 
 EkonStat API is a tool that consolidates public procurement data for Macedonia.
+
+Official public instance:
+
+- https://ekonstat.nkvtd.com/api/
+
+This is the primary live instance and reference environment for the project.
+
 It provides:
 
 - A modular HTTP API layer with shared infrastructure and validation
@@ -41,17 +48,25 @@ mkdir -p secrets
 openssl rand -base64 32 > secrets/database_password.txt
 ```
 
-1. Start API + scheduler + bundled Postgres:
+2. Ensure the reverse-proxy Docker network exists:
 
 ```bash
-docker compose up -d --build app scheduler postgres
+docker network create edge-proxy || true
 ```
 
-3. Verify:
+3. Start Postgres, run migrations once, then start app + scheduler:
 
 ```bash
-curl http://localhost:8080/api/ping
-curl http://localhost:8080/api/ready
+docker compose up -d postgres
+docker compose --profile tools run --rm migrate
+docker compose up -d --build app scheduler
+```
+
+4. Verify service readiness from inside the app container:
+
+```bash
+docker compose exec app wget -q -O - http://localhost:8080/api/ping
+docker compose exec app wget -q -O - http://localhost:8080/api/ready
 ```
 
 Run locally (development):
@@ -206,7 +221,26 @@ The compose setup is Postgres-first: API and workers depend on the bundled `post
 Before starting services, ensure the external reverse-proxy network exists:
 
 ```bash
-docker network create cloudflare-tunnel || true
+docker network create edge-proxy || true
+```
+
+Run a reverse edge proxy on that network. Cloudflare Tunnel is a recommended example (official image):
+
+```bash
+docker run -d \
+  --name cloudflared \
+  --restart unless-stopped \
+  --network edge-proxy \
+  cloudflare/cloudflared:latest \
+  tunnel --no-autoupdate run --token <YOUR_CLOUDFLARE_TUNNEL_TOKEN>
+```
+
+If you run your edge proxy from a separate compose project, ensure it also attaches to the same external `edge-proxy` network.
+
+If the container already exists:
+
+```bash
+docker restart cloudflared
 ```
 
 Run database and migrations first:
@@ -216,7 +250,7 @@ docker compose up -d postgres
 docker compose --profile tools run --rm migrate
 ```
 
-Run API + scheduler + database:
+Run API + scheduler:
 
 ```bash
 docker compose up -d --build app scheduler
@@ -236,8 +270,13 @@ docker compose ps
 
 API default URL:
 
-- API is exposed through your reverse proxy (for example a `cloudflared` tunnel) connected to the `cloudflare-tunnel` Docker network.
+- API is exposed through a reverse edge proxy connected to the `edge-proxy` Docker network (for example `cloudflared`).
 - The app container is not published directly to a host port in production compose.
+
+Notes:
+
+- The API container and your edge proxy container must share the same external Docker network name (`edge-proxy`).
+- No host port is required for the API container when using tunnel-based ingress.
 
 ## Usage
 
@@ -268,7 +307,11 @@ curl "http://localhost:8080/api/contracts/institutions/12/realised?pageSize=10&c
 
 ## API
 
-Base URL: /api
+Base URL: `/api`
+
+For live reference check out:
+
+- https://ekonstat.nkvtd.com/api/
 
 ### Core endpoints
 
@@ -293,7 +336,7 @@ Base URL: /api
 | GET | /api/contracts/institutions/:id/awarded |
 | GET | /api/contracts/institutions/:id/realised |
 
-### Pagination contract
+### Pagination
 
 All list endpoints support:
 
