@@ -203,10 +203,23 @@ If you only want continuous API + scheduled ingestion, skip dev:backfiller.
 Use this mode to run built artifacts inside containers.
 The compose setup is Postgres-first: API and workers depend on the bundled `postgres` service and build `DATABASE_URL` internally from `POSTGRES_USER`, `POSTGRES_DB`, and the mounted password secret.
 
+Before starting services, ensure the external reverse-proxy network exists:
+
+```bash
+docker network create cloudflare-tunnel || true
+```
+
+Run database and migrations first:
+
+```bash
+docker compose up -d postgres
+docker compose --profile tools run --rm migrate
+```
+
 Run API + scheduler + database:
 
 ```bash
-docker compose up -d --build app scheduler postgres
+docker compose up -d --build app scheduler
 ```
 
 Optional one-off backfill run:
@@ -223,7 +236,8 @@ docker compose ps
 
 API default URL:
 
-- http://localhost:8080
+- API is exposed through your reverse proxy (for example a `cloudflared` tunnel) connected to the `cloudflare-tunnel` Docker network.
+- The app container is not published directly to a host port in production compose.
 
 ## Usage
 
