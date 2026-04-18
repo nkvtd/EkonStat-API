@@ -156,5 +156,5 @@ secrets:
 
 networks:
   default:
-  cloudflare-tunnel:
+  edge-proxy:
     external: true
