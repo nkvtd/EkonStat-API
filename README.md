@@ -335,6 +335,10 @@ For live reference check out:
 | GET | /api/contracts/institutions/:id |
 | GET | /api/contracts/institutions/:id/awarded |
 | GET | /api/contracts/institutions/:id/realised |
+| GET | /api/contracts/contractors |
+| GET | /api/contracts/contractors/:id |
+| GET | /api/contracts/contractors/:id/awarded |
+| GET | /api/contracts/contractors/:id/realised |
 
 ### Pagination
 
