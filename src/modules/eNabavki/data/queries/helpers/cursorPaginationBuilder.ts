@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, lt, or, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, lt, or, type SQL, sql } from 'drizzle-orm';
 
 type CursorValue = string | number;
 
@@ -86,7 +86,7 @@ export function buildCursorPagination<
             : isIdOnlySort
               ? [desc(config.idColumn as never)]
               : [
-                    desc(sortConfig.orderByColumn as never),
+                    sql`${sortConfig.orderByColumn} DESC NULLS LAST`,
                     desc(config.idColumn as never),
                 ];
 

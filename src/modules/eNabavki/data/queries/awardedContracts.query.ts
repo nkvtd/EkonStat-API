@@ -106,6 +106,36 @@ export async function insertAwardedContracts(
             WHERE ac.id = agg.awarded_contract_id;
         `);
 
+        await tx.execute(sql`
+            UPDATE e_nabavki.contractors c
+            SET awarded_contracts_count = (
+                SELECT COUNT(*)
+                FROM e_nabavki.awarded_contracts ac
+                WHERE ac.contractor_id = c.id
+            )
+            WHERE c.id IN (
+                SELECT contractor_id 
+                FROM e_nabavki.awarded_contracts 
+                WHERE id IN (${insertedIdsSql})
+                  AND contractor_id IS NOT NULL
+            );
+        `);
+
+        await tx.execute(sql`
+            UPDATE e_nabavki.institutions i
+            SET awarded_contracts_count = (
+                SELECT COUNT(*)
+                FROM e_nabavki.awarded_contracts ac
+                WHERE ac.contracting_institution_id = i.id
+            )
+            WHERE i.id IN (
+                SELECT contracting_institution_id 
+                FROM e_nabavki.awarded_contracts 
+                WHERE id IN (${insertedIdsSql})
+                  AND contracting_institution_id IS NOT NULL
+            );
+        `);
+
         return inserted;
     });
 }
@@ -220,4 +250,10 @@ export async function getAwardedContractById(db: DbOrTx, contractId: number) {
         .limit(1);
 
     return contract || null;
+}
+
+export async function getTotalAwardedContractsCount(
+    db: DbOrTx,
+): Promise<number> {
+    return await db.$count(awardedTable);
 }

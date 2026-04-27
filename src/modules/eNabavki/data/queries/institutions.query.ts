@@ -36,13 +36,21 @@ export async function getInstitutions(
     db: DbOrTx,
     query: PaginationQuery,
 ): Promise<PaginatedResult<InstitutionItem>> {
-    const { cursor, pageSize, ...filters } = query;
+    const { cursor, pageSize, sortBy, sortDirection, ...filters } = query;
 
-    const pagination = buildCursorPagination<InstitutionItem, 'id'>({
+    const pagination = buildCursorPagination<
+        InstitutionItem,
+        'id' | 'awardedContractsCount' | 'realisedContractsCount' | 'spendings'
+    >({
         cursor,
         pageSize,
-        sortBy: 'id',
-        sortDirection: 'asc',
+        sortBy: sortBy as
+            | 'id'
+            | 'awardedContractsCount'
+            | 'realisedContractsCount'
+            | 'spendings'
+            | undefined,
+        sortDirection,
         defaultSortBy: 'id',
         defaultSortDirection: 'asc',
         idColumn: institutionsTable.id,
@@ -51,11 +59,56 @@ export async function getInstitutions(
                 orderByColumn: institutionsTable.id,
                 getCursorValue: (row) => row.id,
             },
+            awardedContractsCount: {
+                orderByColumn: institutionsTable.awardedContractsCount,
+                getCursorValue: (row) => row.awardedContractsCount ?? 0,
+            },
+            realisedContractsCount: {
+                orderByColumn: institutionsTable.realisedContractsCount,
+                getCursorValue: (row) => row.realisedContractsCount ?? 0,
+            },
+            spendings: {
+                orderByColumn: institutionsTable.spendings,
+                getCursorValue: (row) => row.spendings ?? '',
+            },
         },
     });
 
     const filterConditions = await buildFilterConditions(filters, {
         name: { column: institutionsTable.name, operator: 'contains' },
+        spendings: { column: institutionsTable.spendings, operator: 'eq' },
+        moreThanSpendings: {
+            column: institutionsTable.spendings,
+            operator: 'gte',
+        },
+        lessThanSpendings: {
+            column: institutionsTable.spendings,
+            operator: 'lte',
+        },
+        awardedContractsCount: {
+            column: institutionsTable.awardedContractsCount,
+            operator: 'eq',
+        },
+        moreThanAwardedContractsCount: {
+            column: institutionsTable.awardedContractsCount,
+            operator: 'gte',
+        },
+        lessThanAwardedContractsCount: {
+            column: institutionsTable.awardedContractsCount,
+            operator: 'lte',
+        },
+        realisedContractsCount: {
+            column: institutionsTable.realisedContractsCount,
+            operator: 'eq',
+        },
+        moreThanRealisedContractsCount: {
+            column: institutionsTable.realisedContractsCount,
+            operator: 'gte',
+        },
+        lessThanRealisedContractsCount: {
+            column: institutionsTable.realisedContractsCount,
+            operator: 'lte',
+        },
     });
 
     const whereConditions = and(pagination.whereCursor, ...filterConditions);
@@ -170,4 +223,8 @@ export async function getRealisedContractsForInstitutionById(
         nextCursor: pagination.nextCursor(contracts),
         invalidCursor: pagination.invalidCursor,
     };
+}
+
+export async function getTotalInstitutionsCount(db: DbOrTx): Promise<number> {
+    return await db.$count(institutionsTable);
 }

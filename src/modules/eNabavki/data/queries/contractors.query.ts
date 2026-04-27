@@ -36,13 +36,21 @@ export async function getContractors(
     db: DbOrTx,
     query: PaginationQuery,
 ): Promise<PaginatedResult<ContractorItem>> {
-    const { cursor, pageSize, ...filters } = query;
+    const { cursor, pageSize, sortBy, sortDirection, ...filters } = query;
 
-    const pagination = buildCursorPagination<ContractorItem, 'id'>({
+    const pagination = buildCursorPagination<
+        ContractorItem,
+        'id' | 'awardedContractsCount' | 'realisedContractsCount' | 'earnings'
+    >({
         cursor,
         pageSize,
-        sortBy: 'id',
-        sortDirection: 'asc',
+        sortBy: sortBy as
+            | 'id'
+            | 'awardedContractsCount'
+            | 'realisedContractsCount'
+            | 'earnings'
+            | undefined,
+        sortDirection,
         defaultSortBy: 'id',
         defaultSortDirection: 'asc',
         idColumn: contractorsTable.id,
@@ -51,11 +59,56 @@ export async function getContractors(
                 orderByColumn: contractorsTable.id,
                 getCursorValue: (row) => row.id,
             },
+            awardedContractsCount: {
+                orderByColumn: contractorsTable.awardedContractsCount,
+                getCursorValue: (row) => row.awardedContractsCount ?? 0,
+            },
+            realisedContractsCount: {
+                orderByColumn: contractorsTable.realisedContractsCount,
+                getCursorValue: (row) => row.realisedContractsCount ?? 0,
+            },
+            earnings: {
+                orderByColumn: contractorsTable.earnings,
+                getCursorValue: (row) => row.earnings ?? '',
+            },
         },
     });
 
     const filterConditions = await buildFilterConditions(filters, {
         name: { column: contractorsTable.name, operator: 'contains' },
+        earnings: { column: contractorsTable.earnings, operator: 'eq' },
+        moreThanEarnings: {
+            column: contractorsTable.earnings,
+            operator: 'gte',
+        },
+        lessThanEarnings: {
+            column: contractorsTable.earnings,
+            operator: 'lte',
+        },
+        awardedContractsCount: {
+            column: contractorsTable.awardedContractsCount,
+            operator: 'eq',
+        },
+        moreThanAwardedContractsCount: {
+            column: contractorsTable.awardedContractsCount,
+            operator: 'gte',
+        },
+        lessThanAwardedContractsCount: {
+            column: contractorsTable.awardedContractsCount,
+            operator: 'lte',
+        },
+        realisedContractsCount: {
+            column: contractorsTable.realisedContractsCount,
+            operator: 'eq',
+        },
+        moreThanRealisedContractsCount: {
+            column: contractorsTable.realisedContractsCount,
+            operator: 'gte',
+        },
+        lessThanRealisedContractsCount: {
+            column: contractorsTable.realisedContractsCount,
+            operator: 'lte',
+        },
     });
 
     const whereConditions = and(pagination.whereCursor, ...filterConditions);
@@ -165,4 +218,8 @@ export async function getRealisedContractsForContractorById(
         nextCursor: pagination.nextCursor(contracts),
         invalidCursor: pagination.invalidCursor,
     };
+}
+
+export async function getTotalContractorsCount(db: DbOrTx): Promise<number> {
+    return await db.$count(contractorsTable);
 }

@@ -17,6 +17,9 @@ export const institutionsTable = eNabavkiSchema.table(
     {
         id: serial('id').primaryKey(),
         name: text('name').notNull().unique(),
+        awardedContractsCount: integer('awarded_contracts_count').default(0),
+        realisedContractsCount: integer('realised_contracts_count').default(0),
+        spendings: numeric('spendings'),
     },
     (table) => [
         index('institutions_name_trgm_idx').using(
@@ -26,10 +29,22 @@ export const institutionsTable = eNabavkiSchema.table(
     ],
 );
 
-export const contractorsTable = eNabavkiSchema.table('contractors', {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull().unique(),
-});
+export const contractorsTable = eNabavkiSchema.table(
+    'contractors',
+    {
+        id: serial('id').primaryKey(),
+        name: text('name').notNull().unique(),
+        awardedContractsCount: integer('awarded_contracts_count').default(0),
+        realisedContractsCount: integer('realised_contracts_count').default(0),
+        earnings: numeric('earnings'),
+    },
+    (table) => [
+        index('contractors_name_trgm_idx').using(
+            'gin',
+            sql`((public.my_unaccent(lower(coalesce(${table.name}, '')))) gin_trgm_ops)`,
+        ),
+    ],
+);
 
 export const realisedTable = eNabavkiSchema.table(
     'realised_contracts',

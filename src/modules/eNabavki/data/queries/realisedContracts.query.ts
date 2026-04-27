@@ -77,6 +77,46 @@ export async function insertRealisedContracts(
                 );
         `);
 
+        await tx.execute(sql`
+            UPDATE e_nabavki.contractors c
+            SET realised_contracts_count = (
+                SELECT COUNT(*)
+                FROM e_nabavki.realised_contracts rc
+                WHERE rc.contractor_id = c.id
+            ),
+            earnings = (
+                SELECT COALESCE(SUM(paid_contract_value), 0)
+                FROM e_nabavki.realised_contracts rc
+                WHERE rc.contractor_id = c.id
+            )
+            WHERE c.id IN (
+                SELECT contractor_id 
+                FROM e_nabavki.realised_contracts 
+                WHERE id IN (${insertedIdsSql})
+                  AND contractor_id IS NOT NULL
+            );
+        `);
+
+        await tx.execute(sql`
+            UPDATE e_nabavki.institutions i
+            SET realised_contracts_count = (
+                SELECT COUNT(*)
+                FROM e_nabavki.realised_contracts rc
+                WHERE rc.contracting_institution_id = i.id
+            ),
+            spendings = (
+                SELECT COALESCE(SUM(paid_contract_value), 0)
+                FROM e_nabavki.realised_contracts rc
+                WHERE rc.contracting_institution_id = i.id
+            )
+            WHERE i.id IN (
+                SELECT contracting_institution_id 
+                FROM e_nabavki.realised_contracts 
+                WHERE id IN (${insertedIdsSql})
+                  AND contracting_institution_id IS NOT NULL
+            );
+        `);
+
         return inserted;
     });
 }
@@ -207,4 +247,10 @@ export async function getRealisedContractById(
         .limit(1);
 
     return contract || null;
+}
+
+export async function getTotalRealisedContractsCount(
+    db: DbOrTx,
+): Promise<number> {
+    return await db.$count(realisedTable);
 }
