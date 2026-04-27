@@ -296,13 +296,25 @@ curl http://localhost:8080/api/.well-known
 ### Fetch awarded contracts (paged)
 
 ```bash
-curl "http://localhost:8080/api/contracts/awarded?pageSize=10&cursor=0"
+curl "http://localhost:8080/api/contracts/awarded?pageSize=10"
 ```
 
 ### Fetch realised contracts for an institution
 
 ```bash
-curl "http://localhost:8080/api/contracts/institutions/12/realised?pageSize=10&cursor=0"
+curl "http://localhost:8080/api/contracts/institutions/12/realised?pageSize=10"
+```
+
+### Fetch next page using returned cursor
+
+```bash
+curl "http://localhost:8080/api/contracts/awarded?pageSize=10&cursor=<nextCursor-from-previous-response>"
+```
+
+### Fetch awarded contracts sorted by value
+
+```bash
+curl "http://localhost:8080/api/contracts/awarded?pageSize=10&sortBy=assignedContractValue&sortDirection=desc"
 ```
 
 ## API
@@ -342,12 +354,20 @@ For live reference check out:
 
 ### Pagination
 
-All list endpoints support:
+All list endpoints support cursor pagination:
 
 | Query param | Type | Default | Notes |
 | --- | --- | --- | --- |
-| cursor | number | 0 | Forward cursor |
+| cursor | string | none | Opaque cursor returned by previous response meta.nextCursor |
 | pageSize | number | 10 | Min 1, max 100 |
+
+Sortable cursor pagination is available on selected endpoints:
+
+| Endpoint | Default sort | Supported sortBy values | sortDirection |
+| --- | --- | --- | --- |
+| /api/contracts/realised | postDate | postDate, assignedContractValue, realisedContractValue, paidRealisedContractValue | asc, desc |
+| /api/contracts/awarded | postDate | postDate, estimatedContractValue, assignedContractValue | asc, desc |
+| /api/contracts/awarded/:id/changes | changeDate | changeDate | asc, desc |
 
 Response envelope:
 
@@ -355,12 +375,17 @@ Response envelope:
 {
   "data": [],
   "meta": {
-    "nextCursor": 123,
+    "nextCursor": "eyJzb3J0QnkiOiJwb3N0RGF0ZSIsInNvcnREaXJlY3Rpb24iOiJkZXNjIiwidmFsdWUiOiIyMDI2LTA0LTI3VDEzOjAwOjAwLjAwMFoiLCJpZCI6MTIzfQ",
     "pageSize": 10,
     "hasMore": true
   }
 }
 ```
+
+Notes:
+
+- Treat nextCursor as an opaque token and pass it back exactly as received.
+- If cursor is invalid or does not match current sort parameters, the API responds with HTTP 400 and message Invalid cursor.
 
 ### Filtering
 

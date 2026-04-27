@@ -2,7 +2,6 @@ import { Hono } from 'hono';
 import type { Env } from '../../../infrastructure/server/Env.type.js';
 import { zValidator } from '../../../infrastructure/server/validation/customValidator.js';
 import { idParamSchema } from '../../../shared/validation/Id.schema.js';
-import { paginationSchema } from '../../../shared/validation/Pagination.schema.js';
 import {
     toAwardedContractDTO,
     toAwardedContractDTOList,
@@ -13,7 +12,10 @@ import {
     getAwardedContractById,
 } from '../data/queries/awardedContracts.query.js';
 import { getChangesForAwardedContractById } from '../data/queries/changesInAwardedContracts.query.js';
-import { awardedContractsQuerySchema } from './validation/awardedContracts.schema.js';
+import {
+    awardedContractChangesQuerySchema,
+    awardedContractsQuerySchema,
+} from './validation/awardedContracts.schema.js';
 
 const awardedContractsRoutes = new Hono<Env>();
 
@@ -24,20 +26,24 @@ awardedContractsRoutes.get(
         const db = c.get('database');
         const query = c.req.valid('query');
 
-        const contracts = await getActiveAwardedContracts(db, query);
+        const result = await getActiveAwardedContracts(db, query);
 
-        const nextCursor =
-            contracts.length === query.pageSize
-                ? contracts[contracts.length - 1]?.id
-                : null;
+        if (result.invalidCursor) {
+            return c.json(
+                {
+                    message: 'Invalid cursor',
+                },
+                400,
+            );
+        }
 
         return c.json(
             {
-                data: toAwardedContractDTOList(contracts),
+                data: toAwardedContractDTOList(result.data),
                 meta: {
-                    nextCursor,
+                    nextCursor: result.nextCursor,
                     pageSize: query.pageSize,
-                    hasMore: nextCursor !== null,
+                    hasMore: result.nextCursor !== null,
                 },
             },
             200,
@@ -75,26 +81,30 @@ awardedContractsRoutes.get(
 awardedContractsRoutes.get(
     '/:id/changes',
     zValidator('param', idParamSchema),
-    zValidator('query', paginationSchema),
+    zValidator('query', awardedContractChangesQuerySchema),
     async (c) => {
         const db = c.get('database');
         const id = c.req.valid('param').id;
         const query = c.req.valid('query');
 
-        const changes = await getChangesForAwardedContractById(db, id, query);
+        const result = await getChangesForAwardedContractById(db, id, query);
 
-        const nextCursor =
-            changes.length === query.pageSize
-                ? changes[changes.length - 1]?.id
-                : null;
+        if (result.invalidCursor) {
+            return c.json(
+                {
+                    message: 'Invalid cursor',
+                },
+                400,
+            );
+        }
 
         return c.json(
             {
-                data: toChangesInAwardedContractDTOList(changes),
+                data: toChangesInAwardedContractDTOList(result.data),
                 meta: {
-                    nextCursor,
+                    nextCursor: result.nextCursor,
                     pageSize: query.pageSize,
-                    hasMore: nextCursor !== null,
+                    hasMore: result.nextCursor !== null,
                 },
             },
             200,

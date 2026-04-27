@@ -1,13 +1,15 @@
-import { and, asc, eq, gt, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { DbOrTx } from '../../../../shared/types/Database.type.js';
-import type { PaginatedFiltersQuery } from '../../../../shared/types/PaginatedFiltersQuery.type.js';
+import type { PaginatedResult } from '../../../../shared/types/PaginatedResult.type.js';
+import type { PaginationQuery } from '../../../../shared/types/PaginationQuery.type.js';
 import {
     type RealisedInsert,
     type RealisedItem,
     realisedTable,
 } from '../schema.js';
+import { buildCursorPagination } from './helpers/cursorPaginationBuilder.js';
+import { buildFilterConditions } from './helpers/filterConditionsBuilder.js';
 import { resolveInstitutionAndContractorIds } from './helpers/idResolver.js';
-import { buildWhereClause } from './helpers/whereClauseBuilder.js';
 
 export async function insertRealisedContracts(
     db: DbOrTx,
@@ -81,11 +83,50 @@ export async function insertRealisedContracts(
 
 export async function getRealisedContracts(
     db: DbOrTx,
-    query: PaginatedFiltersQuery,
-): Promise<RealisedItem[] | []> {
-    const { cursor, pageSize, ...filters } = query;
+    query: PaginationQuery,
+): Promise<PaginatedResult<RealisedItem>> {
+    const { cursor, pageSize, sortBy, sortDirection, ...filters } = query;
 
-    const filterConditions = await buildWhereClause(filters, {
+    const pagination = buildCursorPagination<
+        RealisedItem,
+        | 'postDate'
+        | 'assignedContractValue'
+        | 'realisedContractValue'
+        | 'paidRealisedContractValue'
+    >({
+        cursor,
+        pageSize,
+        sortBy: sortBy as
+            | 'postDate'
+            | 'assignedContractValue'
+            | 'realisedContractValue'
+            | 'paidRealisedContractValue'
+            | undefined,
+        sortDirection,
+        defaultSortBy: 'postDate',
+        defaultSortDirection: 'desc',
+        idColumn: realisedTable.id,
+        sorts: {
+            postDate: {
+                orderByColumn: realisedTable.postDate,
+                getCursorValue: (row) => row.postDate ?? '',
+            },
+            assignedContractValue: {
+                orderByColumn: realisedTable.assignedContractValue,
+                getCursorValue: (row) => row.assignedContractValue ?? '',
+            },
+            realisedContractValue: {
+                orderByColumn: realisedTable.realisedContractValue,
+                getCursorValue: (row) => row.realisedContractValue ?? '',
+            },
+            paidRealisedContractValue: {
+                orderByColumn: realisedTable.paidRealisedContractValue,
+                getCursorValue: (row) => row.paidRealisedContractValue ?? '',
+            },
+        },
+    });
+
+    const filterConditions = await buildFilterConditions(filters, {
         institutionId: {
             column: realisedTable.contractingInstitutionId,
             operator: 'eq',
@@ -129,22 +170,30 @@ export async function getRealisedContracts(
             column: realisedTable.realisedContractValue,
             operator: 'gte',
         },
-        deliveryDate: { column: realisedTable.deliveryDate, operator: 'gte' },
+        afterPostDate: {
+            column: realisedTable.postDate,
+            operator: 'gte',
+        },
+        beforePostDate: {
+            column: realisedTable.postDate,
+            operator: 'lte',
+        },
     });
 
-    const whereConditions = and(
-        cursor ? gt(realisedTable.id, cursor) : undefined,
-        ...filterConditions,
-    );
+    const whereConditions = and(pagination.whereCursor, ...filterConditions);
 
     const contracts = await db
         .select()
         .from(realisedTable)
         .where(whereConditions)
-        .limit(pageSize)
-        .orderBy(asc(realisedTable.id));
+        .limit(pagination.limit)
+        .orderBy(...pagination.orderBy);
 
-    return contracts;
+    return {
+        data: pagination.page(contracts),
+        nextCursor: pagination.nextCursor(contracts),
+        invalidCursor: pagination.invalidCursor,
+    };
 }
 
 export async function getRealisedContractById(

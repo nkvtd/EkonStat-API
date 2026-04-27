@@ -1,0 +1,2 @@
+ALTER TABLE "e_nabavki"."awarded_contracts" RENAME COLUMN "assignment_date" TO "post_date";--> statement-breakpoint
+ALTER TABLE "e_nabavki"."realised_contracts" RENAME COLUMN "delivery_date" TO "post_date";--> statement-breakpoint

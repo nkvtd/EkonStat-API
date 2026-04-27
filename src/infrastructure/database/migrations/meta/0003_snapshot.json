@@ -1,0 +1,850 @@
+{
+  "id": "6226cafd-ee83-4098-a60a-9722cc320225",
+  "prevId": "1a458351-dfe1-4815-a76c-c2e1fa61178f",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "e_nabavki.awarded_contracts": {
+      "name": "awarded_contracts",
+      "schema": "e_nabavki",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "internal_id": {
+          "name": "internal_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_number": {
+          "name": "process_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "realised_contract_id": {
+          "name": "realised_contract_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "num_changes": {
+          "name": "num_changes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "contracting_institution": {
+          "name": "contracting_institution",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contracting_institution_id": {
+          "name": "contracting_institution_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contractor": {
+          "name": "contractor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contractor_id": {
+          "name": "contractor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "beneficial_owners": {
+          "name": "beneficial_owners",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "small_contract": {
+          "name": "small_contract",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_contract": {
+          "name": "type_contract",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_contract_id": {
+          "name": "type_contract_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_procedure": {
+          "name": "type_procedure",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_procedure_id": {
+          "name": "type_procedure_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_offer": {
+          "name": "type_offer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_offer_id": {
+          "name": "type_offer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_framework": {
+          "name": "type_framework",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_framework_agreement_id": {
+          "name": "type_framework_agreement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estimated_contract_value": {
+          "name": "estimated_contract_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "original_contract_value": {
+          "name": "original_contract_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assigned_contract_value": {
+          "name": "assigned_contract_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "post_date": {
+          "name": "post_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "latest_change_date": {
+          "name": "latest_change_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scrape_date": {
+          "name": "scrape_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "awarded_match_cols_idx": {
+          "name": "awarded_match_cols_idx",
+          "columns": [
+            {
+              "expression": "contracting_institution_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "contractor_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "original_contract_value",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "subject",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "awarded_realised_contract_id_idx": {
+          "name": "awarded_realised_contract_id_idx",
+          "columns": [
+            {
+              "expression": "realised_contract_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "awarded_contracting_institution_trgm_idx": {
+          "name": "awarded_contracting_institution_trgm_idx",
+          "columns": [
+            {
+              "expression": "((public.my_unaccent(lower(coalesce(\"contracting_institution\", '')))) gin_trgm_ops)",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "awarded_contractor_trgm_idx": {
+          "name": "awarded_contractor_trgm_idx",
+          "columns": [
+            {
+              "expression": "((public.my_unaccent(lower(coalesce(\"contractor\", '')))) gin_trgm_ops)",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "awarded_contracts_realised_contract_id_realised_contracts_id_fk": {
+          "name": "awarded_contracts_realised_contract_id_realised_contracts_id_fk",
+          "tableFrom": "awarded_contracts",
+          "tableTo": "realised_contracts",
+          "schemaTo": "e_nabavki",
+          "columnsFrom": [
+            "realised_contract_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "awarded_contracts_contracting_institution_id_institutions_id_fk": {
+          "name": "awarded_contracts_contracting_institution_id_institutions_id_fk",
+          "tableFrom": "awarded_contracts",
+          "tableTo": "institutions",
+          "schemaTo": "e_nabavki",
+          "columnsFrom": [
+            "contracting_institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "awarded_contracts_contractor_id_contractors_id_fk": {
+          "name": "awarded_contracts_contractor_id_contractors_id_fk",
+          "tableFrom": "awarded_contracts",
+          "tableTo": "contractors",
+          "schemaTo": "e_nabavki",
+          "columnsFrom": [
+            "contractor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "awarded_contracts_internal_id_unique": {
+          "name": "awarded_contracts_internal_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "internal_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "e_nabavki.changes_in_awarded_contracts": {
+      "name": "changes_in_awarded_contracts",
+      "schema": "e_nabavki",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "awarded_contract_id": {
+          "name": "awarded_contract_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "internal_id": {
+          "name": "internal_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_number": {
+          "name": "process_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contracting_institution": {
+          "name": "contracting_institution",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contracting_institution_id": {
+          "name": "contracting_institution_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contractor": {
+          "name": "contractor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contractor_id": {
+          "name": "contractor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "change_reason": {
+          "name": "change_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "change_reason_id": {
+          "name": "change_reason_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assigned_contract_value": {
+          "name": "assigned_contract_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_contract_value": {
+          "name": "updated_contract_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "difference_in_value": {
+          "name": "difference_in_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "change_date": {
+          "name": "change_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scrape_date": {
+          "name": "scrape_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "changes_match_cols_idx": {
+          "name": "changes_match_cols_idx",
+          "columns": [
+            {
+              "expression": "contracting_institution_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "contractor_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "assigned_contract_value",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "subject",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "changes_awarded_contract_id_idx": {
+          "name": "changes_awarded_contract_id_idx",
+          "columns": [
+            {
+              "expression": "awarded_contract_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "changes_in_awarded_contracts_awarded_contract_id_awarded_contracts_id_fk": {
+          "name": "changes_in_awarded_contracts_awarded_contract_id_awarded_contracts_id_fk",
+          "tableFrom": "changes_in_awarded_contracts",
+          "tableTo": "awarded_contracts",
+          "schemaTo": "e_nabavki",
+          "columnsFrom": [
+            "awarded_contract_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "changes_in_awarded_contracts_contracting_institution_id_institutions_id_fk": {
+          "name": "changes_in_awarded_contracts_contracting_institution_id_institutions_id_fk",
+          "tableFrom": "changes_in_awarded_contracts",
+          "tableTo": "institutions",
+          "schemaTo": "e_nabavki",
+          "columnsFrom": [
+            "contracting_institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "changes_in_awarded_contracts_contractor_id_contractors_id_fk": {
+          "name": "changes_in_awarded_contracts_contractor_id_contractors_id_fk",
+          "tableFrom": "changes_in_awarded_contracts",
+          "tableTo": "contractors",
+          "schemaTo": "e_nabavki",
+          "columnsFrom": [
+            "contractor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "changes_in_awarded_contracts_internal_id_unique": {
+          "name": "changes_in_awarded_contracts_internal_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "internal_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "e_nabavki.contractors": {
+      "name": "contractors",
+      "schema": "e_nabavki",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "contractors_name_unique": {
+          "name": "contractors_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "e_nabavki.institutions": {
+      "name": "institutions",
+      "schema": "e_nabavki",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "institutions_name_trgm_idx": {
+          "name": "institutions_name_trgm_idx",
+          "columns": [
+            {
+              "expression": "((public.my_unaccent(lower(coalesce(\"name\", '')))) gin_trgm_ops)",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "institutions_name_unique": {
+          "name": "institutions_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "e_nabavki.realised_contracts": {
+      "name": "realised_contracts",
+      "schema": "e_nabavki",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "internal_id": {
+          "name": "internal_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_number": {
+          "name": "process_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contracting_institution": {
+          "name": "contracting_institution",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contracting_institution_id": {
+          "name": "contracting_institution_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contractor": {
+          "name": "contractor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contractor_id": {
+          "name": "contractor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_contract": {
+          "name": "type_contract",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_contract_id": {
+          "name": "type_contract_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_procedure": {
+          "name": "type_procedure",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_procedure_id": {
+          "name": "type_procedure_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_offer": {
+          "name": "type_offer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_offer_id": {
+          "name": "type_offer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_framework": {
+          "name": "type_framework",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_framework_agreement_id": {
+          "name": "type_framework_agreement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assigned_contract_value": {
+          "name": "assigned_contract_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_value": {
+          "name": "contract_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paid_contract_value": {
+          "name": "paid_contract_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "post_date": {
+          "name": "post_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scrape_date": {
+          "name": "scrape_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "realised_match_cols_idx": {
+          "name": "realised_match_cols_idx",
+          "columns": [
+            {
+              "expression": "contracting_institution_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "contractor_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "assigned_contract_value",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "subject",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "realised_contracting_institution_trgm_idx": {
+          "name": "realised_contracting_institution_trgm_idx",
+          "columns": [
+            {
+              "expression": "((public.my_unaccent(lower(coalesce(\"contracting_institution\", '')))) gin_trgm_ops)",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "realised_contractor_trgm_idx": {
+          "name": "realised_contractor_trgm_idx",
+          "columns": [
+            {
+              "expression": "((public.my_unaccent(lower(coalesce(\"contractor\", '')))) gin_trgm_ops)",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "realised_contracts_contracting_institution_id_institutions_id_fk": {
+          "name": "realised_contracts_contracting_institution_id_institutions_id_fk",
+          "tableFrom": "realised_contracts",
+          "tableTo": "institutions",
+          "schemaTo": "e_nabavki",
+          "columnsFrom": [
+            "contracting_institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "realised_contracts_contractor_id_contractors_id_fk": {
+          "name": "realised_contracts_contractor_id_contractors_id_fk",
+          "tableFrom": "realised_contracts",
+          "tableTo": "contractors",
+          "schemaTo": "e_nabavki",
+          "columnsFrom": [
+            "contractor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "realised_contracts_internal_id_unique": {
+          "name": "realised_contracts_internal_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "internal_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

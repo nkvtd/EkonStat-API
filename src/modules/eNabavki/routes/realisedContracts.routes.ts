@@ -21,20 +21,24 @@ realisedContractsRoutes.get(
         const db = c.get('database');
         const query = c.req.valid('query');
 
-        const contracts = await getRealisedContracts(db, query);
+        const result = await getRealisedContracts(db, query);
 
-        const nextCursor =
-            contracts.length === query.pageSize
-                ? contracts[contracts.length - 1]?.id
-                : null;
+        if (result.invalidCursor) {
+            return c.json(
+                {
+                    message: 'Invalid cursor',
+                },
+                400,
+            );
+        }
 
         return c.json(
             {
-                data: toRealisedContractDTOList(contracts),
+                data: toRealisedContractDTOList(result.data),
                 meta: {
-                    nextCursor,
+                    nextCursor: result.nextCursor,
                     pageSize: query.pageSize,
-                    hasMore: nextCursor !== null,
+                    hasMore: result.nextCursor !== null,
                 },
             },
             200,

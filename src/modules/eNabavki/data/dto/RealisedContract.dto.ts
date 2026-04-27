@@ -32,7 +32,7 @@ export type RealisedContractDTO = {
     assignedContractValue: number | null;
     realisedContractValue: number | null;
     paidContractValue: number | null;
-    deliveryDate: string | null;
+    postDate: string | null;
 };
 
 export function toRealisedContractDTO(
@@ -69,7 +69,7 @@ export function toRealisedContractDTO(
         assignedContractValue: toNumber(contract.assignedContractValue),
         realisedContractValue: toNumber(contract.realisedContractValue),
         paidContractValue: toNumber(contract.paidRealisedContractValue),
-        deliveryDate: contract.deliveryDate,
+        postDate: contract.postDate,
     };
 }
 

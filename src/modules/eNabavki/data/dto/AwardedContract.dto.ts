@@ -34,7 +34,7 @@ export type AwardedDTO = {
     estimatedContractValue: number | null;
     originalContractValue: number | null;
     assignedContractValue: number | null;
-    assignmentDate: string | null;
+    postDate: string | null;
     latestChangeDate: string | null;
 };
 
@@ -72,7 +72,7 @@ export function toAwardedContractDTO(contract: AwardedItem): AwardedDTO {
         estimatedContractValue: toNumber(contract.estimatedContractValue),
         originalContractValue: toNumber(contract.originalContractValue),
         assignedContractValue: toNumber(contract.assignedContractValue),
-        assignmentDate: contract.assignmentDate,
+        postDate: contract.postDate,
         latestChangeDate: contract.latestChangeDate,
     };
 }

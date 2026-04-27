@@ -1,6 +1,7 @@
-import { and, asc, eq, gt, inArray, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import type { DbOrTx } from '../../../../shared/types/Database.type.js';
-import type { PaginatedFiltersQuery } from './../../../../shared/types/PaginatedFiltersQuery.type.js';
+import type { PaginatedResult } from './../../../../shared/types/PaginatedResult.type.js';
+import type { PaginationQuery } from '../../../../shared/types/PaginationQuery.type.js';
 import {
     type AwardedItem,
     awardedTable,
@@ -9,7 +10,8 @@ import {
     type RealisedItem,
     realisedTable,
 } from '../schema.js';
-import { buildWhereClause } from './helpers/whereClauseBuilder.js';
+import { buildCursorPagination } from './helpers/cursorPaginationBuilder.js';
+import { buildFilterConditions } from './helpers/filterConditionsBuilder.js';
 
 export async function insertAndGetInstitutions(
     db: DbOrTx,
@@ -32,27 +34,44 @@ export async function insertAndGetInstitutions(
 
 export async function getInstitutions(
     db: DbOrTx,
-    query: PaginatedFiltersQuery,
-): Promise<InstitutionItem[] | []> {
+    query: PaginationQuery,
+): Promise<PaginatedResult<InstitutionItem>> {
     const { cursor, pageSize, ...filters } = query;
 
-    const filterConditions = await buildWhereClause(filters, {
+    const pagination = buildCursorPagination<InstitutionItem, 'id'>({
+        cursor,
+        pageSize,
+        sortBy: 'id',
+        sortDirection: 'asc',
+        defaultSortBy: 'id',
+        defaultSortDirection: 'asc',
+        idColumn: institutionsTable.id,
+        sorts: {
+            id: {
+                orderByColumn: institutionsTable.id,
+                getCursorValue: (row) => row.id,
+            },
+        },
+    });
+
+    const filterConditions = await buildFilterConditions(filters, {
         name: { column: institutionsTable.name, operator: 'contains' },
     });
 
-    const whereConditions = and(
-        cursor ? gt(institutionsTable.id, cursor) : undefined,
-        ...filterConditions,
-    );
+    const whereConditions = and(pagination.whereCursor, ...filterConditions);
 
     const institutions = await db
         .select()
         .from(institutionsTable)
         .where(whereConditions)
-        .limit(pageSize)
-        .orderBy(asc(institutionsTable.id));
+        .limit(pagination.limit)
+        .orderBy(...pagination.orderBy);
 
-    return institutions;
+    return {
+        data: pagination.page(institutions),
+        nextCursor: pagination.nextCursor(institutions),
+        invalidCursor: pagination.invalidCursor,
+    };
 }
 
 export async function getInstitutionById(
@@ -71,44 +90,84 @@ export async function getInstitutionById(
 export async function getAwardedContractsForInstitutionById(
     db: DbOrTx,
     id: number,
-    query: PaginatedFiltersQuery,
-): Promise<AwardedItem[] | []> {
+    query: PaginationQuery,
+): Promise<PaginatedResult<AwardedItem>> {
     const { cursor, pageSize } = query;
+
+    const pagination = buildCursorPagination<AwardedItem, 'id'>({
+        cursor,
+        pageSize,
+        sortBy: 'id',
+        sortDirection: 'asc',
+        defaultSortBy: 'id',
+        defaultSortDirection: 'asc',
+        idColumn: awardedTable.id,
+        sorts: {
+            id: {
+                orderByColumn: awardedTable.id,
+                getCursorValue: (row) => row.id,
+            },
+        },
+    });
 
     const contracts = await db
         .select()
         .from(awardedTable)
         .where(
             and(
-                cursor ? gt(awardedTable.id, cursor) : undefined,
+                pagination.whereCursor,
                 eq(awardedTable.contractingInstitutionId, id),
                 isNull(awardedTable.realisedContractId),
             ),
         )
-        .limit(pageSize)
-        .orderBy(asc(awardedTable.id));
+        .limit(pagination.limit)
+        .orderBy(...pagination.orderBy);
 
-    return contracts;
+    return {
+        data: pagination.page(contracts),
+        nextCursor: pagination.nextCursor(contracts),
+        invalidCursor: pagination.invalidCursor,
+    };
 }
 
 export async function getRealisedContractsForInstitutionById(
     db: DbOrTx,
     id: number,
-    query: PaginatedFiltersQuery,
-): Promise<RealisedItem[] | []> {
+    query: PaginationQuery,
+): Promise<PaginatedResult<RealisedItem>> {
     const { cursor, pageSize } = query;
+
+    const pagination = buildCursorPagination<RealisedItem, 'id'>({
+        cursor,
+        pageSize,
+        sortBy: 'id',
+        sortDirection: 'asc',
+        defaultSortBy: 'id',
+        defaultSortDirection: 'asc',
+        idColumn: realisedTable.id,
+        sorts: {
+            id: {
+                orderByColumn: realisedTable.id,
+                getCursorValue: (row) => row.id,
+            },
+        },
+    });
 
     const contracts = await db
         .select()
         .from(realisedTable)
         .where(
             and(
-                cursor ? gt(realisedTable.id, cursor) : undefined,
+                pagination.whereCursor,
                 eq(realisedTable.contractingInstitutionId, id),
             ),
         )
-        .limit(pageSize)
-        .orderBy(asc(realisedTable.id));
+        .limit(pagination.limit)
+        .orderBy(...pagination.orderBy);
 
-    return contracts;
+    return {
+        data: pagination.page(contracts),
+        nextCursor: pagination.nextCursor(contracts),
+        invalidCursor: pagination.invalidCursor,
+    };
 }

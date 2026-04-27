@@ -57,7 +57,7 @@ export const realisedTable = eNabavkiSchema.table(
         assignedContractValue: numeric('assigned_contract_value'), //AssignedPrice
         realisedContractValue: numeric('contract_value'), //RealizedPrice
         paidRealisedContractValue: numeric('paid_contract_value'), //RealizedPaidPrice
-        deliveryDate: timestamp('delivery_date', {
+        postDate: timestamp('post_date', {
             withTimezone: true,
             mode: 'string',
         }), //DeliveryDate
@@ -116,7 +116,7 @@ export const awardedTable = eNabavkiSchema.table(
         estimatedContractValue: numeric('estimated_contract_value'), //EstimatedPrice
         originalContractValue: numeric('original_contract_value'), //AssignedPrice
         assignedContractValue: numeric('assigned_contract_value'), //AssignedPrice
-        assignmentDate: timestamp('assignment_date', {
+        postDate: timestamp('post_date', {
             withTimezone: true,
             mode: 'string',
         }), //AssignementDate

@@ -1,13 +1,15 @@
-import { and, asc, eq, gt, isNull, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import type { DbOrTx } from '../../../../shared/types/Database.type.js';
-import type { PaginatedFiltersQuery } from '../../../../shared/types/PaginatedFiltersQuery.type.js';
+import type { PaginatedResult } from '../../../../shared/types/PaginatedResult.type.js';
+import type { PaginationQuery } from '../../../../shared/types/PaginationQuery.type.js';
 import {
     type AwardedInsert,
     type AwardedItem,
     awardedTable,
 } from '../schema.js';
+import { buildCursorPagination } from './helpers/cursorPaginationBuilder.js';
+import { buildFilterConditions } from './helpers/filterConditionsBuilder.js';
 import { resolveInstitutionAndContractorIds } from './helpers/idResolver.js';
-import { buildWhereClause } from './helpers/whereClauseBuilder.js';
 
 export async function insertAwardedContracts(
     db: DbOrTx,
@@ -110,11 +112,42 @@ export async function insertAwardedContracts(
 
 export async function getActiveAwardedContracts(
     db: DbOrTx,
-    query: PaginatedFiltersQuery,
-): Promise<AwardedItem[] | []> {
-    const { cursor, pageSize, ...filters } = query;
+    query: PaginationQuery,
+): Promise<PaginatedResult<AwardedItem>> {
+    const { cursor, pageSize, sortBy, sortDirection, ...filters } = query;
 
-    const filterConditions = await buildWhereClause(filters, {
+    const pagination = buildCursorPagination<
+        AwardedItem,
+        'postDate' | 'estimatedContractValue' | 'assignedContractValue'
+    >({
+        cursor,
+        pageSize,
+        sortBy: sortBy as
+            | 'postDate'
+            | 'estimatedContractValue'
+            | 'assignedContractValue'
+            | undefined,
+        sortDirection,
+        defaultSortBy: 'postDate',
+        defaultSortDirection: 'desc',
+        idColumn: awardedTable.id,
+        sorts: {
+            postDate: {
+                orderByColumn: awardedTable.postDate,
+                getCursorValue: (row) => row.postDate ?? '',
+            },
+            estimatedContractValue: {
+                orderByColumn: awardedTable.estimatedContractValue,
+                getCursorValue: (row) => row.estimatedContractValue ?? '',
+            },
+            assignedContractValue: {
+                orderByColumn: awardedTable.assignedContractValue,
+                getCursorValue: (row) => row.assignedContractValue ?? '',
+            },
+        },
+    });
+
+    const filterConditions = await buildFilterConditions(filters, {
         numChanges: { column: awardedTable.numChanges, operator: 'eq' },
         institutionId: {
             column: awardedTable.contractingInstitutionId,
@@ -149,14 +182,18 @@ export async function getActiveAwardedContracts(
             column: awardedTable.assignedContractValue,
             operator: 'gte',
         },
-        assignmentDate: {
-            column: awardedTable.assignmentDate,
+        afterPostDate: {
+            column: awardedTable.postDate,
             operator: 'gte',
+        },
+        beforePostDate: {
+            column: awardedTable.postDate,
+            operator: 'lte',
         },
     });
 
     const whereConditions = and(
-        cursor ? gt(awardedTable.id, cursor) : undefined,
+        pagination.whereCursor,
         isNull(awardedTable.realisedContractId),
         ...filterConditions,
     );
@@ -165,10 +202,14 @@ export async function getActiveAwardedContracts(
         .select()
         .from(awardedTable)
         .where(whereConditions)
-        .limit(pageSize)
-        .orderBy(asc(awardedTable.id));
+        .limit(pagination.limit)
+        .orderBy(...pagination.orderBy);
 
-    return contracts;
+    return {
+        data: pagination.page(contracts),
+        nextCursor: pagination.nextCursor(contracts),
+        invalidCursor: pagination.invalidCursor,
+    };
 }
 
 export async function getAwardedContractById(db: DbOrTx, contractId: number) {

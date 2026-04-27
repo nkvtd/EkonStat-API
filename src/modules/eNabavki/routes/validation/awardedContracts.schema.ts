@@ -1,5 +1,13 @@
 import { z } from 'zod';
-import { paginationSchema } from '../../../../shared/validation/Pagination.schema.js';
+import { buildSortablePaginationQuerySchema } from '../../../../shared/validation/PaginationQuery.schema.js';
+
+const awardedContractsSortFields = [
+    'postDate',
+    'estimatedContractValue',
+    'assignedContractValue',
+] as const;
+
+const changesInAwardedSortFields = ['changeDate'] as const;
 
 const awardedContractsFilterSchema = z.object({
     numChanges: z.coerce.number().int().nonnegative().optional(),
@@ -19,5 +27,16 @@ const awardedContractsFilterSchema = z.object({
 });
 
 export const awardedContractsQuerySchema = awardedContractsFilterSchema.extend(
-    paginationSchema.shape,
+    buildSortablePaginationQuerySchema(
+        awardedContractsSortFields,
+        'postDate',
+        'desc',
+    ).shape,
 );
+
+export const awardedContractChangesQuerySchema =
+    buildSortablePaginationQuerySchema(
+        changesInAwardedSortFields,
+        'changeDate',
+        'desc',
+    );

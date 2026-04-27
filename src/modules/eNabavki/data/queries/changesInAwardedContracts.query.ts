@@ -1,11 +1,13 @@
-import { and, asc, eq, gt, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { DbOrTx } from '../../../../shared/types/Database.type.js';
-import type { PaginatedFiltersQuery } from '../../../../shared/types/PaginatedFiltersQuery.type.js';
+import type { PaginatedResult } from './../../../../shared/types/PaginatedResult.type.js';
+import type { PaginationQuery } from '../../../../shared/types/PaginationQuery.type.js';
 import {
     type ChangesInAwardedInsert,
     type ChangesInAwardedItem,
     changesInAwardedTable,
 } from '../schema.js';
+import { buildCursorPagination } from './helpers/cursorPaginationBuilder.js';
 import { resolveInstitutionAndContractorIds } from './helpers/idResolver.js';
 
 export async function insertChangesInAwardedContracts(
@@ -90,21 +92,44 @@ export async function insertChangesInAwardedContracts(
 export async function getChangesForAwardedContractById(
     db: DbOrTx,
     contractId: number,
-    query: PaginatedFiltersQuery,
-): Promise<ChangesInAwardedItem[] | []> {
-    const { cursor, pageSize } = query;
+    query: PaginationQuery,
+): Promise<PaginatedResult<ChangesInAwardedItem>> {
+    const { cursor, pageSize, sortBy, sortDirection } = query;
+
+    const pagination = buildCursorPagination<
+        ChangesInAwardedItem,
+        'changeDate'
+    >({
+        cursor,
+        pageSize,
+        sortBy: sortBy as 'changeDate' | undefined,
+        sortDirection,
+        defaultSortBy: 'changeDate',
+        defaultSortDirection: 'desc',
+        idColumn: changesInAwardedTable.id,
+        sorts: {
+            changeDate: {
+                orderByColumn: changesInAwardedTable.changeDate,
+                getCursorValue: (row) => row.changeDate ?? '',
+            },
+        },
+    });
 
     const changes = await db
         .select()
         .from(changesInAwardedTable)
         .where(
             and(
-                cursor ? gt(changesInAwardedTable.id, cursor) : undefined,
+                pagination.whereCursor,
                 eq(changesInAwardedTable.awardedContractId, contractId),
             ),
         )
-        .limit(pageSize)
-        .orderBy(asc(changesInAwardedTable.id));
+        .limit(pagination.limit)
+        .orderBy(...pagination.orderBy);
 
-    return changes;
+    return {
+        data: pagination.page(changes),
+        nextCursor: pagination.nextCursor(changes),
+        invalidCursor: pagination.invalidCursor,
+    };
 }

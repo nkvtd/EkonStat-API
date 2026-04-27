@@ -10,7 +10,7 @@ type FilterMapping = Record<
     }
 >;
 
-export function buildWhereClause(
+export function buildFilterConditions(
     filters: Record<string, unknown>,
     mapping: FilterMapping,
 ): SQL[] {
