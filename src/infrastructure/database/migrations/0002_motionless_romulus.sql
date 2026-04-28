@@ -1,3 +1,6 @@
+CREATE EXTENSION IF NOT EXISTS unaccent;--> statement-breakpoint
+CREATE EXTENSION IF NOT EXISTS pg_trgm;--> statement-breakpoint
+
 ALTER TABLE "e_nabavki"."awarded_contracts" RENAME COLUMN "assignment_date" TO "post_date";--> statement-breakpoint
 ALTER TABLE "e_nabavki"."realised_contracts" RENAME COLUMN "delivery_date" TO "post_date";--> statement-breakpoint
 ALTER TABLE "e_nabavki"."contractors" ADD COLUMN "awarded_contracts_count" integer DEFAULT 0;--> statement-breakpoint
