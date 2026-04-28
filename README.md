@@ -333,6 +333,7 @@ For live reference check out:
 | GET | /api/ready | Readiness check (verifies DB connectivity) |
 | GET | /api/.well-known | Endpoint discovery payload |
 | GET | /api/contracts/reference | Reference dictionaries for enum-like IDs |
+| GET | /api/contracts/stats | Overview counts for contracts, institutions, and contractors |
 
 ### Contracts endpoints
 

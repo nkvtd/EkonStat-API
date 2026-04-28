@@ -4,6 +4,7 @@ import awardedContractsRoutes from './awardedContracts.routes.js';
 import contractorRoutes from './contractors.routes.js';
 import institutionsRoutes from './institutions.routes.js';
 import realisedContractsRoutes from './realisedContracts.routes.js';
+import statsRoutes from './stats.routes.js';
 
 const eNabavkiRoutes = new Hono<Env>().basePath('/contracts');
 
@@ -11,6 +12,7 @@ eNabavkiRoutes.route('/awarded', awardedContractsRoutes);
 eNabavkiRoutes.route('/realised', realisedContractsRoutes);
 eNabavkiRoutes.route('/institutions', institutionsRoutes);
 eNabavkiRoutes.route('/contractors', contractorRoutes);
+eNabavkiRoutes.route('/stats', statsRoutes);
 
 eNabavkiRoutes.get('/reference', (c) => {
     return c.json(

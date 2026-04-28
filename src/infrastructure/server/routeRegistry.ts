@@ -47,6 +47,14 @@ routeRegistry.get('/.well-known', (c) => {
                     contracts: [
                         {
                             method: 'GET',
+                            path: '/api/contracts/reference',
+                        },
+                        {
+                            method: 'GET',
+                            path: '/api/contracts/stats',
+                        },
+                        {
+                            method: 'GET',
                             path: '/api/contracts/awarded-contracts',
                         },
                         {
