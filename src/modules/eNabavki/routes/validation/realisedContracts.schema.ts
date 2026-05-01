@@ -22,7 +22,7 @@ const realisedContractsFilterSchema = z.object({
     moreThanAssignedValue: z.coerce.number().positive().optional(),
     lessThanRealisedValue: z.coerce.number().positive().optional(),
     moreThanRealisedValue: z.coerce.number().positive().optional(),
-    deliveryDate: z.iso.datetime({ offset: true }).optional(),
+    postDate: z.iso.datetime({ offset: true }).optional(),
 });
 
 export const realisedContractsQuerySchema =

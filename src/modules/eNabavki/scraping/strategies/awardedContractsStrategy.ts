@@ -92,7 +92,7 @@ export const awardedContractsStrategy: ScrapingStrategy<
             estimatedContractValue: item.EstimatedPrice,
             originalContractValue: item.AssignedPrice,
             assignedContractValue: item.AssignedPrice,
-            assignmentDate: formatDate(item.AssignementDate),
+            postDate: formatDate(item.AssignementDate),
             latestChangeDate: formatDate(item.AssignementDate),
             scrapeDate: dateISO,
         })) as AwardedInsert[];

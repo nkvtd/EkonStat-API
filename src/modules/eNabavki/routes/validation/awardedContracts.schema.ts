@@ -23,7 +23,7 @@ const awardedContractsFilterSchema = z.object({
     typeFrameworkAgreementId: z.coerce.number().int().positive().optional(),
     lessThanAssignedValue: z.coerce.number().positive().optional(),
     moreThanAssignedValue: z.coerce.number().positive().optional(),
-    assignmentDate: z.iso.datetime({ offset: true }).optional(),
+    postDate: z.iso.datetime({ offset: true }).optional(),
 });
 
 export const awardedContractsQuerySchema = awardedContractsFilterSchema.extend(
