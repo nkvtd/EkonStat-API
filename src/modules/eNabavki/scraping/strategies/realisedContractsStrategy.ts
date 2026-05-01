@@ -88,7 +88,7 @@ export const realisedContractsStrategy: ScrapingStrategy<
             assignedContractValue: item.AssignedPrice,
             realisedContractValue: item.RealizedPrice,
             paidRealisedContractValue: item.RealizedPaidPrice,
-            deliveryDate: formatDate(item.DeliveryDate),
+            postDate: formatDate(item.DeliveryDate),
             scrapeDate: dateISO,
         })) as RealisedInsert[];
     },
