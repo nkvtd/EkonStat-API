@@ -5,6 +5,8 @@ const awardedContractsSortFields = [
     'postDate',
     'estimatedContractValue',
     'assignedContractValue',
+    'originalContractValue',
+    'numChanges',
 ] as const;
 
 const changesInAwardedSortFields = ['changeDate'] as const;

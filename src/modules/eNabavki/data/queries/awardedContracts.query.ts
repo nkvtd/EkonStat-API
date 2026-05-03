@@ -148,7 +148,11 @@ export async function getActiveAwardedContracts(
 
     const pagination = buildCursorPagination<
         AwardedItem,
-        'postDate' | 'estimatedContractValue' | 'assignedContractValue' | 'originalContractValue'
+        | 'postDate'
+        | 'estimatedContractValue'
+        | 'assignedContractValue'
+        | 'originalContractValue'
+        | 'numChanges'
     >({
         cursor,
         pageSize,
@@ -157,6 +161,7 @@ export async function getActiveAwardedContracts(
             | 'estimatedContractValue'
             | 'assignedContractValue'
             | 'originalContractValue'
+            | 'numChanges'
             | undefined,
         sortDirection,
         defaultSortBy: 'postDate',
@@ -178,6 +183,10 @@ export async function getActiveAwardedContracts(
             originalContractValue: {
                 orderByColumn: awardedTable.originalContractValue,
                 getCursorValue: (row) => row.originalContractValue ?? '',
+            },
+            numChanges: {
+                orderByColumn: awardedTable.numChanges,
+                getCursorValue: (row) => row.numChanges ?? '',
             },
         },
     });
