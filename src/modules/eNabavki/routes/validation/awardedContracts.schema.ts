@@ -15,7 +15,7 @@ const awardedContractsFilterSchema = z.object({
     institution: z.string().trim().min(1).max(255).optional(),
     contractorId: z.coerce.number().int().positive().optional(),
     contractor: z.string().trim().min(1).max(255).optional(),
-    smallContract: z.coerce.boolean().optional(),
+    smallContract: z.stringbool().optional(),
     subject: z.string().max(255).optional(),
     typeContractId: z.coerce.number().int().positive().optional(),
     typeProcedureId: z.coerce.number().int().positive().optional(),
