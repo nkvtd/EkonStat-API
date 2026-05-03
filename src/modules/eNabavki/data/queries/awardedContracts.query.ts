@@ -114,8 +114,8 @@ export async function insertAwardedContracts(
                 WHERE ac.contractor_id = c.id
             )
             WHERE c.id IN (
-                SELECT contractor_id 
-                FROM e_nabavki.awarded_contracts 
+                SELECT contractor_id
+                FROM e_nabavki.awarded_contracts
                 WHERE id IN (${insertedIdsSql})
                   AND contractor_id IS NOT NULL
             );
@@ -129,8 +129,8 @@ export async function insertAwardedContracts(
                 WHERE ac.contracting_institution_id = i.id
             )
             WHERE i.id IN (
-                SELECT contracting_institution_id 
-                FROM e_nabavki.awarded_contracts 
+                SELECT contracting_institution_id
+                FROM e_nabavki.awarded_contracts
                 WHERE id IN (${insertedIdsSql})
                   AND contracting_institution_id IS NOT NULL
             );
@@ -148,7 +148,7 @@ export async function getActiveAwardedContracts(
 
     const pagination = buildCursorPagination<
         AwardedItem,
-        'postDate' | 'estimatedContractValue' | 'assignedContractValue'
+        'postDate' | 'estimatedContractValue' | 'assignedContractValue' | 'originalContractValue'
     >({
         cursor,
         pageSize,
@@ -156,6 +156,7 @@ export async function getActiveAwardedContracts(
             | 'postDate'
             | 'estimatedContractValue'
             | 'assignedContractValue'
+            | 'originalContractValue'
             | undefined,
         sortDirection,
         defaultSortBy: 'postDate',
@@ -173,6 +174,10 @@ export async function getActiveAwardedContracts(
             assignedContractValue: {
                 orderByColumn: awardedTable.assignedContractValue,
                 getCursorValue: (row) => row.assignedContractValue ?? '',
+            },
+            originalContractValue: {
+                orderByColumn: awardedTable.originalContractValue,
+                getCursorValue: (row) => row.originalContractValue ?? '',
             },
         },
     });
