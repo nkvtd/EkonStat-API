@@ -218,6 +218,14 @@ export async function getActiveAwardedContracts(
             column: awardedTable.typeFrameworkAgreementId,
             operator: 'eq',
         },
+        lessThanEstimatedValue: {
+            column: awardedTable.estimatedContractValue,
+            operator: 'lte',
+        },
+        moreThanEstimatedValue: {
+            column: awardedTable.estimatedContractValue,
+            operator: 'gte',
+        },
         lessThanAssignedValue: {
             column: awardedTable.assignedContractValue,
             operator: 'lte',

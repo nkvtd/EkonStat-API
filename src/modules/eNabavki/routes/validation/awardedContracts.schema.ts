@@ -23,6 +23,8 @@ const awardedContractsFilterSchema = z.object({
     typeProcedureId: z.coerce.number().int().positive().optional(),
     typeOfferId: z.coerce.number().int().positive().optional(),
     typeFrameworkAgreementId: z.coerce.number().int().positive().optional(),
+    lessThanEstimatedValue: z.coerce.number().positive().optional(),
+    moreThanEstimatedValue: z.coerce.number().positive().optional(),
     lessThanAssignedValue: z.coerce.number().positive().optional(),
     moreThanAssignedValue: z.coerce.number().positive().optional(),
     beforePostDate: z.iso.datetime({ offset: true }).optional(),
