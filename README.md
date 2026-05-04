@@ -368,7 +368,7 @@ Sortable cursor pagination is available on selected endpoints:
 | --- | --- | --- | --- |
 | /api/contracts/contractors | id | id, awardedContractsCount, realisedContractsCount, earnings | asc, desc |
 | /api/contracts/institutions | id | id, awardedContractsCount, realisedContractsCount, spendings | asc, desc |
-| /api/contracts/realised | postDate | postDate, assignedContractValue, realisedContractValue, paidRealisedContractValue | asc, desc |
+| /api/contracts/realised | postDate | postDate, assignedContractValue, realisedContractValue, paidContractValue | asc, desc |
 | /api/contracts/awarded | postDate | postDate, estimatedContractValue, assignedContractValue | asc, desc |
 | /api/contracts/awarded/:id/changes | changeDate | changeDate | asc, desc |
 
