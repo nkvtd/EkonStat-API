@@ -22,6 +22,8 @@ const realisedContractsFilterSchema = z.object({
     moreThanAssignedValue: z.coerce.number().positive().optional(),
     lessThanRealisedValue: z.coerce.number().positive().optional(),
     moreThanRealisedValue: z.coerce.number().positive().optional(),
+    lessThanPaidValue: z.coerce.number().positive().optional(),
+    moreThanPaidValue: z.coerce.number().positive().optional(),
     afterPostDate: z.iso.datetime({ offset: true }).optional(),
     beforePostDate: z.iso.datetime({ offset: true }).optional(),
 });

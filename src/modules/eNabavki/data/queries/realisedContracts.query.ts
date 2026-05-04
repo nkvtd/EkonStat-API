@@ -90,8 +90,8 @@ export async function insertRealisedContracts(
                 WHERE rc.contractor_id = c.id
             )
             WHERE c.id IN (
-                SELECT contractor_id 
-                FROM e_nabavki.realised_contracts 
+                SELECT contractor_id
+                FROM e_nabavki.realised_contracts
                 WHERE id IN (${insertedIdsSql})
                   AND contractor_id IS NOT NULL
             );
@@ -110,8 +110,8 @@ export async function insertRealisedContracts(
                 WHERE rc.contracting_institution_id = i.id
             )
             WHERE i.id IN (
-                SELECT contracting_institution_id 
-                FROM e_nabavki.realised_contracts 
+                SELECT contracting_institution_id
+                FROM e_nabavki.realised_contracts
                 WHERE id IN (${insertedIdsSql})
                   AND contracting_institution_id IS NOT NULL
             );
@@ -208,6 +208,14 @@ export async function getRealisedContracts(
         },
         moreThanRealisedValue: {
             column: realisedTable.realisedContractValue,
+            operator: 'gte',
+        },
+        lessThanPaidValue: {
+            column: realisedTable.paidRealisedContractValue,
+            operator: 'lte',
+        },
+        moreThanPaidValue: {
+            column: realisedTable.paidRealisedContractValue,
             operator: 'gte',
         },
         afterPostDate: {
