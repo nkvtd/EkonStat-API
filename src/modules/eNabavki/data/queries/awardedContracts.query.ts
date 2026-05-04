@@ -170,23 +170,23 @@ export async function getActiveAwardedContracts(
         sorts: {
             postDate: {
                 orderByColumn: awardedTable.postDate,
-                getCursorValue: (row) => row.postDate ?? '',
+                getCursorValue: (row) => row.postDate ?? null,
             },
             estimatedContractValue: {
                 orderByColumn: awardedTable.estimatedContractValue,
-                getCursorValue: (row) => row.estimatedContractValue ?? '',
+                getCursorValue: (row) => row.estimatedContractValue ?? null,
             },
             assignedContractValue: {
                 orderByColumn: awardedTable.assignedContractValue,
-                getCursorValue: (row) => row.assignedContractValue ?? '',
+                getCursorValue: (row) => row.assignedContractValue ?? null,
             },
             originalContractValue: {
                 orderByColumn: awardedTable.originalContractValue,
-                getCursorValue: (row) => row.originalContractValue ?? '',
+                getCursorValue: (row) => row.originalContractValue ?? null,
             },
             numChanges: {
                 orderByColumn: awardedTable.numChanges,
-                getCursorValue: (row) => row.numChanges ?? '',
+                getCursorValue: (row) => row.numChanges ?? null,
             },
         },
     });

@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, gt, lt, or, type SQL, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, isNull, lt, or, type SQL, sql } from 'drizzle-orm';
 
-type CursorValue = string | number;
+type CursorValue = string | number | null;
 
 export type CursorSortDirection = 'asc' | 'desc';
 
@@ -96,17 +96,25 @@ export function buildCursorPagination<
           ? sortDirection === 'asc'
               ? gt(config.idColumn as never, cursor.id as never)
               : lt(config.idColumn as never, cursor.id as never)
-          : (or(
-                sortDirection === 'asc'
-                    ? gt(cursorColumn as never, cursor.value as never)
-                    : lt(cursorColumn as never, cursor.value as never),
-                and(
-                    eq(cursorColumn as never, cursor.value as never),
-                    sortDirection === 'asc'
-                        ? gt(config.idColumn as never, cursor.id as never)
-                        : lt(config.idColumn as never, cursor.id as never),
-                ),
-            ) as SQL);
+          : cursor.value === null
+            ? and(
+                  isNull(cursorColumn as never),
+                  sortDirection === 'asc'
+                      ? gt(config.idColumn as never, cursor.id as never)
+                      : lt(config.idColumn as never, cursor.id as never),
+              )
+            : (or(
+                  sortDirection === 'asc'
+                      ? gt(cursorColumn as never, cursor.value as never)
+                      : lt(cursorColumn as never, cursor.value as never),
+                  isNull(cursorColumn as never),
+                  and(
+                      eq(cursorColumn as never, cursor.value as never),
+                      sortDirection === 'asc'
+                          ? gt(config.idColumn as never, cursor.id as never)
+                          : lt(config.idColumn as never, cursor.id as never),
+                  ),
+              ) as SQL);
 
     function page(rows: TRow[]): TRow[] {
         return rows.slice(0, config.pageSize);

@@ -149,19 +149,19 @@ export async function getRealisedContracts(
         sorts: {
             postDate: {
                 orderByColumn: realisedTable.postDate,
-                getCursorValue: (row) => row.postDate ?? '',
+                getCursorValue: (row) => row.postDate ?? null,
             },
             assignedContractValue: {
                 orderByColumn: realisedTable.assignedContractValue,
-                getCursorValue: (row) => row.assignedContractValue ?? '',
+                getCursorValue: (row) => row.assignedContractValue ?? null,
             },
             realisedContractValue: {
                 orderByColumn: realisedTable.realisedContractValue,
-                getCursorValue: (row) => row.realisedContractValue ?? '',
+                getCursorValue: (row) => row.realisedContractValue ?? null,
             },
             paidContractValue: {
                 orderByColumn: realisedTable.paidRealisedContractValue,
-                getCursorValue: (row) => row.paidRealisedContractValue ?? '',
+                getCursorValue: (row) => row.paidRealisedContractValue ?? null,
             },
         },
     });
