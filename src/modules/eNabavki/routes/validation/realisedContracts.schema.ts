@@ -5,7 +5,7 @@ const realisedContractsSortFields = [
     'postDate',
     'assignedContractValue',
     'realisedContractValue',
-    'paidRealisedContractValue',
+    'paidContractValue',
 ] as const;
 
 const realisedContractsFilterSchema = z.object({

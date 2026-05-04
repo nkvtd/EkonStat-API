@@ -132,7 +132,7 @@ export async function getRealisedContracts(
         | 'postDate'
         | 'assignedContractValue'
         | 'realisedContractValue'
-        | 'paidRealisedContractValue'
+        | 'paidContractValue'
     >({
         cursor,
         pageSize,
@@ -140,7 +140,7 @@ export async function getRealisedContracts(
             | 'postDate'
             | 'assignedContractValue'
             | 'realisedContractValue'
-            | 'paidRealisedContractValue'
+            | 'paidContractValue'
             | undefined,
         sortDirection,
         defaultSortBy: 'postDate',
@@ -159,7 +159,7 @@ export async function getRealisedContracts(
                 orderByColumn: realisedTable.realisedContractValue,
                 getCursorValue: (row) => row.realisedContractValue ?? '',
             },
-            paidRealisedContractValue: {
+            paidContractValue: {
                 orderByColumn: realisedTable.paidRealisedContractValue,
                 getCursorValue: (row) => row.paidRealisedContractValue ?? '',
             },
