@@ -53,7 +53,7 @@
     "zod-validation-error": "^5.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.6",
+    "@biomejs/biome": "2.4.15",
     "@types/node": "^25.6.0",
     "@types/p-map": "^2.0.0",
     "@types/pg": "^8.16.0",
