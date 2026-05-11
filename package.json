@@ -44,7 +44,7 @@
     "hono": "^4.11.6",
     "hono-rate-limiter": "^0.5.3",
     "p-map": "^7.0.4",
-    "p-queue": "^9.1.0",
+    "p-queue": "^9.2.0",
     "pg": "^8.17.2",
     "tough-cookie": "^6.0.1",
     "tsc-alias": "^1.8.16",
