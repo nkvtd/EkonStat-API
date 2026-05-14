@@ -32,7 +32,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@hono/node-server": "^1.19.9",
+    "@hono/node-server": "^2.0.2",
     "@hono/zod-validator": "^0.8.0",
     "@redtea/format-axios-error": "^2.1.1",
     "axios": "^1.16.1",
