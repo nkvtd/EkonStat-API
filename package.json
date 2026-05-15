@@ -36,7 +36,7 @@
     "@hono/zod-validator": "^0.8.0",
     "@redtea/format-axios-error": "^2.1.1",
     "axios": "^1.16.1",
-    "axios-cookiejar-support": "^6.0.5",
+    "axios-cookiejar-support": "^7.0.0",
     "croner": "^10.0.1",
     "cronstrue": "^3.14.0",
     "dotenv": "^17.4.2",
