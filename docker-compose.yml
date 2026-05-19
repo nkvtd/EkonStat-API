@@ -23,9 +23,7 @@ services:
 
   app:
     container_name: app
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/nkvtd/ekonstat-api:latest
     command:
       - /bin/sh
       - -c
@@ -60,9 +58,7 @@ services:
 
   scheduler:
     container_name: scheduler
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/nkvtd/ekonstat-api:latest
     command:
       - /bin/sh
       - -c
@@ -89,9 +85,7 @@ services:
 
   backfiller:
     container_name: backfiller
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/nkvtd/ekonstat-api:latest
     command:
       - /bin/sh
       - -c
