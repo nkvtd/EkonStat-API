@@ -56,7 +56,7 @@ services:
       - default
       - edge-proxy
     labels:
-      - com.centurylinklabs.watchtower.enable=true
+      - "com.centurylinklabs.watchtower.enable=true"
 
   scheduler:
     container_name: scheduler
@@ -85,7 +85,7 @@ services:
       postgres:
         condition: service_healthy
     labels:
-      - com.centurylinklabs.watchtower.enable=true
+      - "com.centurylinklabs.watchtower.enable=true"
 
   backfiller:
     container_name: backfiller

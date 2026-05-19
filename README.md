@@ -1,6 +1,6 @@
 # EkonStat-API
 
-[![Node.js >=20](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node.js >=24](https://img.shields.io/badge/node-%3E%3D24-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/postgresql-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -59,7 +59,7 @@ docker network create edge-proxy || true
 ```bash
 docker compose up -d postgres
 docker compose --profile tools run --rm migrate
-docker compose up -d --build app scheduler
+docker compose up -d app scheduler
 ```
 
 4. Verify service readiness from inside the app container:
@@ -94,7 +94,7 @@ npm run dev:app
 <details>
   <summary><strong>What this project is optimized for</strong></summary>
 
-- Reliable ingestion and serving of procurement data
+- Reliable ingestion and serving of data
 - API consumers that need stable pagination and filter support
 - Automation workflows via outgoing webhooks
 
@@ -170,8 +170,8 @@ src/
 
 ### Prerequisites
 
-- Node.js 20+
-- PostgreSQL 16
+- Node.js 24+
+- PostgreSQL 18
 - Docker and Docker Compose (recommended for production-like runs)
 
 ### Development Mode
@@ -215,8 +215,14 @@ If you only want continuous API + scheduled ingestion, skip dev:backfiller.
 
 ### Production Mode (containerized)
 
-Use this mode to run built artifacts inside containers.
-The compose setup is Postgres-first: API and workers depend on the bundled `postgres` service and build `DATABASE_URL` internally from `POSTGRES_USER`, `POSTGRES_DB`, and the mounted password secret.
+In production, services run as containers using prebuilt images pulled from
+[GHCR](https://github.com/nkvtd/EkonStat-API/pkgs/container/ekonstat-api). No local build step is needed.
+
+The `app`, `scheduler`, and `backfiller` containers construct `DATABASE_URL`
+internally from `POSTGRES_USER`, `POSTGRES_DB`, and the Docker secret mounted
+at `/run/secrets/database_password`. The API is expected to be reached through a
+reverse proxy or tunnel on the external `edge-proxy` network — no host port is
+published for the API container.
 
 Before starting services, ensure the external reverse-proxy network exists:
 
@@ -224,7 +230,8 @@ Before starting services, ensure the external reverse-proxy network exists:
 docker network create edge-proxy || true
 ```
 
-Run a reverse edge proxy on that network. Cloudflare Tunnel is a recommended example (official image):
+Run a reverse edge proxy on that network. Cloudflare Tunnel is a recommended
+example (official image):
 
 ```bash
 docker run -d \
@@ -235,7 +242,8 @@ docker run -d \
   tunnel --no-autoupdate run --token <YOUR_CLOUDFLARE_TUNNEL_TOKEN>
 ```
 
-If you run your edge proxy from a separate compose project, ensure it also attaches to the same external `edge-proxy` network.
+If you run your edge proxy from a separate compose project, ensure it also
+attaches to the same external `edge-proxy` network.
 
 If the container already exists:
 
@@ -253,13 +261,13 @@ docker compose --profile tools run --rm migrate
 Run API + scheduler:
 
 ```bash
-docker compose up -d --build app scheduler
+docker compose up -d app scheduler
 ```
 
 Optional one-off backfill run:
 
 ```bash
-docker compose --profile backfill up --build backfiller
+docker compose --profile backfill up backfiller
 ```
 
 Check running services:
@@ -268,15 +276,20 @@ Check running services:
 docker compose ps
 ```
 
-API default URL:
+**Automatic image updates (optional).** For continuous delivery of image
+updates, you can optionally run Watchtower alongside the stack:
 
-- API is exposed through a reverse edge proxy connected to the `edge-proxy` Docker network (for example `cloudflared`).
-- The app container is not published directly to a host port in production compose.
+```bash
+docker run -d \
+  --name watchtower \
+  --restart unless-stopped \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  nickfedor/watchtower \
+  --label-enable
+```
 
-Notes:
+Watchtower is not required, but the compose labels are already in place if you choose to enable it.
 
-- The API container and your edge proxy container must share the same external Docker network name (`edge-proxy`).
-- No host port is required for the API container when using tunnel-based ingress.
 
 ## Usage
 
@@ -399,20 +412,18 @@ Use /api/contracts/reference to resolve supported enum-like identifiers.
 
 | Variable | Required (Local Dev) | Description |
 | --- | --- | --- |
-| DATABASE_URL | Yes | PostgreSQL connection string used for local development mode. |
-| PORT | No | API port (defaults to 8080) |
-| REALISED_CONTRACTS_WEBHOOK_X | No | Webhook URLs for newly discovered realised contracts |
-| AWARDED_CONTRACTS_WEBHOOK_X | No | Webhook URLs for newly discovered awarded contracts |
-| CHANGES_IN_AWARDED_CONTRACTS_WEBHOOK_X | No | Webhook URLs for newly discovered contract changes |
+| DATABASE_URL | Yes | PostgreSQL connection string used for local development. |
+| PORT | No | API port (defaults to 8080). |
+| REALISED_CONTRACTS_WEBHOOK_X | No | Webhook URLs for newly discovered realised contracts. |
+| AWARDED_CONTRACTS_WEBHOOK_X | No | Webhook URLs for newly discovered awarded contracts. |
+| CHANGES_IN_AWARDED_CONTRACTS_WEBHOOK_X | No | Webhook URLs for newly discovered contract changes. |
 
-When running with Docker Compose, service startup always builds a connection string from `POSTGRES_USER`, `POSTGRES_DB`, and the secret mounted at `/run/secrets/database_password`.
-
-For local compose runs, ensure the secret file exists:
-
-```bash
-mkdir -p secrets
-openssl rand -base64 32 > secrets/database_password.txt
-```
+**`.env` vs secrets.** The `.env` file is used for non-secret runtime settings and
+local development (including `DATABASE_URL` when running outside containers).
+In Docker Compose deployment, the database password is read from the Docker
+secret mounted at `/run/secrets/database_password` and is **not** placed in
+`.env`. App and worker containers construct the full `DATABASE_URL` at startup
+from `POSTGRES_USER`, `POSTGRES_DB`, and the secret value.
 
 Webhook variables are collected by prefix. You can register multiple endpoints by numbering with a trailing _X pattern (for example _1, _2, _3, . . . , _n).
 
