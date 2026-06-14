@@ -1,7 +1,7 @@
+import { runScraper } from '../../infrastructure/scraping/scraperRunner.js';
 import type { DbOrTx } from '../../shared/types/Database.type.js';
 import type { Job } from '../../shared/types/Job.type.js';
 import { ENABAVKI_EVENTS } from './data/events.js';
-import { runScraper } from './scraping/scraperRunner.js';
 import { awardedContractsStrategy } from './scraping/strategies/awardedContractsStrategy.js';
 import { changesInAwardedContractsStrategy } from './scraping/strategies/changesInAwardedContractsStrategy.js';
 import { realisedContractsStrategy } from './scraping/strategies/realisedContractsStrategy.js';

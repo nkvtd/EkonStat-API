@@ -1,4 +1,8 @@
 import type { DbOrTx } from '../../../../shared/types/Database.type.js';
+import type {
+    ScrapingContext,
+    ScrapingStrategy,
+} from '../../../../shared/types/Strategy.type.js';
 import {
     type ChangesInAwardedDTO,
     toChangesInAwardedContractDTOList,
@@ -12,7 +16,6 @@ import type {
 import { formatDate, getCurrentDateString } from '../../util/dates.js';
 import { normaliseName } from '../../util/names.js';
 import { buildBasePayload } from '../payloadBuilder.js';
-import type { ScrapingContext, ScrapingStrategy } from './Strategy.type.js';
 
 export const changesInAwardedContractsStrategy: ScrapingStrategy<
     ChangesInAwardedInsert,
@@ -21,6 +24,11 @@ export const changesInAwardedContractsStrategy: ScrapingStrategy<
 > = {
     name: 'changes-in-awarded-contracts-processing',
     url: 'https://e-nabavki.gov.mk/Notifications/GetNotificationAccpPublicChangeGridData',
+    meta: {
+        method: 'POST',
+        referer: 'https://e-nabavki.gov.mk/PublicAccess/home.aspx',
+        origin: 'https://e-nabavki.gov.mk',
+    },
 
     buildPayload(context: ScrapingContext): URLSearchParams {
         return buildBasePayload({

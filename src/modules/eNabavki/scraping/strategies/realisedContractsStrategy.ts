@@ -1,11 +1,15 @@
 import type { DbOrTx } from '../../../../shared/types/Database.type.js';
+import type {
+    ScrapingContext,
+    ScrapingStrategy,
+} from '../../../../shared/types/Strategy.type.js';
 import {
     type RealisedContractDTO,
     toRealisedContractDTOList,
 } from '../../data/dto/RealisedContract.dto.js';
 import {
     CONTRACT_TYPE_MAP,
-    FRAMEWORK_AGREEMENT_TYPE,
+    FRAMEWORK_AGREEMENT_TYPE_MAP,
     OFFER_TYPE_MAP,
     PROCEDURE_TYPE_MAP,
 } from '../../data/enums.js';
@@ -14,7 +18,6 @@ import type { RealisedInsert, RealisedItem } from '../../data/schema.js';
 import { formatDate, getCurrentDateString } from '../../util/dates.js';
 import { normaliseName } from '../../util/names.js';
 import { buildBasePayload } from '../payloadBuilder.js';
-import type { ScrapingContext, ScrapingStrategy } from './Strategy.type.js';
 
 export const realisedContractsStrategy: ScrapingStrategy<
     RealisedInsert,
@@ -23,6 +26,11 @@ export const realisedContractsStrategy: ScrapingStrategy<
 > = {
     name: 'realised-contracts-processing',
     url: 'https://e-nabavki.gov.mk/Services/NotificationRealizedContract.asmx/GetGridData',
+    meta: {
+        method: 'POST',
+        referer: 'https://e-nabavki.gov.mk/PublicAccess/home.aspx',
+        origin: 'https://e-nabavki.gov.mk',
+    },
 
     buildPayload(context: ScrapingContext): URLSearchParams {
         return buildBasePayload({
@@ -83,7 +91,7 @@ export const realisedContractsStrategy: ScrapingStrategy<
             typeOffer: OFFER_TYPE_MAP[item.OfferTypeId],
             typeOfferId: item.OfferTypeId,
             typeFrameworkAgreement:
-                FRAMEWORK_AGREEMENT_TYPE[item.FrameworkType],
+                FRAMEWORK_AGREEMENT_TYPE_MAP[item.FrameworkType],
             typeFrameworkAgreementId: item.FrameworkType,
             assignedContractValue: item.AssignedPrice,
             realisedContractValue: item.RealizedPrice,

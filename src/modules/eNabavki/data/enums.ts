@@ -37,7 +37,7 @@ export const OFFER_TYPE_MAP: Record<string, string> = {
     '5': 'Најдобар сооднос помеѓу цената и квалитетот', //PRICEQUALITYRATIO
 };
 
-export const FRAMEWORK_AGREEMENT_TYPE: Record<string, string> = {
+export const FRAMEWORK_AGREEMENT_TYPE_MAP: Record<string, string> = {
     '0': 'Без рамковен договор', //WithoutFrameworkAgreement
     '1': 'Еден економски оператор', //OneEconomicOperator
     '2': 'Повеќе економски оператори (повеќе кругови)', //MoreEconomicOperatorsMultipleCircle

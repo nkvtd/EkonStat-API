@@ -1,4 +1,4 @@
-import type { DbOrTx } from '../../../../shared/types/Database.type.js';
+import type { DbOrTx } from './Database.type.js';
 
 export type ScrapingContext = {
     start: number;
@@ -9,6 +9,11 @@ export type ScrapingContext = {
 export type ScrapingStrategy<TInsert, TItem, TDto> = {
     name: string;
     url: string;
+    meta: {
+        method: 'POST' | 'GET';
+        referer: string;
+        origin: string;
+    };
     buildPayload: (context: ScrapingContext) => URLSearchParams;
     parseResponse: (response: unknown, dateISO: string) => TInsert[];
     insertData: (DbOrTx: DbOrTx, data: TInsert[]) => Promise<TItem[]>;

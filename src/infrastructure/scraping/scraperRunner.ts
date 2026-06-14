@@ -1,8 +1,8 @@
-import { logger } from '../../../infrastructure/logging/logger.js';
-import type { DbOrTx } from '../../../shared/types/Database.type.js';
-import { getCurrentDateISO } from '../util/dates.js';
+import { getCurrentDateISO } from '../../modules/eNabavki/util/dates.js';
+import type { DbOrTx } from '../../shared/types/Database.type.js';
+import type { ScrapingStrategy } from '../../shared/types/Strategy.type.js';
+import { logger } from '../logging/logger.js';
 import { ScrapingClient } from './scrapingClient.js';
-import type { ScrapingStrategy } from './strategies/Strategy.type.js';
 
 export async function runScraper<TInsert, TItem, TDto>(
     db: DbOrTx,
@@ -20,7 +20,10 @@ export async function runScraper<TInsert, TItem, TDto>(
 
     const allNewItems: TItem[] = [];
 
-    const scrapingClient = new ScrapingClient();
+    const scrapingClient = new ScrapingClient(
+        strategy.meta.referer,
+        strategy.meta.origin,
+    );
     await scrapingClient.init();
 
     while (pagesFetched < maxPages) {
@@ -30,7 +33,11 @@ export async function runScraper<TInsert, TItem, TDto>(
             draw: currentDraw,
         });
 
-        const response = await scrapingClient.scrape(strategy.url, payload);
+        const response = await scrapingClient.scrape(
+            strategy.meta.method,
+            strategy.url,
+            payload,
+        );
         const data = strategy.parseResponse(response, currentDateISO);
         const newItems = await strategy.insertData(db, data);
 
