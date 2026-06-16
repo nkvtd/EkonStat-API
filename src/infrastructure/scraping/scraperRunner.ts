@@ -1,6 +1,6 @@
-import { getCurrentDateISO } from '../../modules/eNabavki/util/dates.js';
 import type { DbOrTx } from '../../shared/types/Database.type.js';
 import type { ScrapingStrategy } from '../../shared/types/Strategy.type.js';
+import { getCurrentDateISO } from '../../shared/util/dates.js';
 import { logger } from '../logging/logger.js';
 import { ScrapingClient } from './scrapingClient.js';
 

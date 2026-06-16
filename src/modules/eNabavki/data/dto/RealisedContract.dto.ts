@@ -1,4 +1,4 @@
-import { toNumber } from '../../util/numbers.js';
+import { toNumber } from '../../../../shared/util/numbers.js';
 import type { RealisedItem } from '../schema.js';
 
 export type RealisedContractDTO = {

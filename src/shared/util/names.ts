@@ -3,6 +3,16 @@ export function normaliseName(name: string | null | undefined): string | null {
 
     let s = name.normalize('NFKC').trim();
 
+    // &quot;TEXT&quot; &amp; &lt;TEXT&gt; -> "TEXT" & <TEXT>
+    s = s
+        .replace(/&quot;/gi, '"')
+        .replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>');
+
+    // 'TEXT /////// TEXT' -> 'TEXT TEXT'
+    s = s.replace(/\/+/g, ' ');
+
     // „TEXT” «TEXT» “TEXT” ‟TEXT‟ => "TEXT"
     s = s.replace(/[„”«»“”‟]/g, '"');
 
@@ -16,6 +26,11 @@ export function normaliseName(name: string | null | undefined): string | null {
     // ‘TEXT’ -> 'TEXT'
     s = s.replace(/[’`´]/g, "'");
 
+    // 'TEXT"TEXT' -> 'TEXT "TEXT'
+    s = s.replace(/([\p{L}\p{N}])"/gu, '$1 "');
+    s = s.replace(/"([\p{L}\p{N}])/gu, '" $1');
+    s = s.replace(/\s+/g, ' ');
+
     // '-TEXT', '— TEXT' -> ' - TEXT'
     s = s.replace(/\s*[-–—]\s*/g, ' - ');
 
@@ -23,18 +38,11 @@ export function normaliseName(name: string | null | undefined): string | null {
     s = s.replace(/,\s*,+/g, ',');
     s = s.replace(/\s*,\s*/g, ', ');
 
-    // ' ( TEXT ) ' -> '(TEXT)'
-    s = s.replace(/\s+/g, ' ');
-
-    // 'TEXT"TEXT' -> 'TEXT "TEXT'
-    s = s.replace(/([0-9A-Za-zА-Яа-я])"/g, '$1 "');
-    s = s.replace(/"([0-9A-Za-zА-Яа-я])/g, '" $1');
-    s = s.replace(/\s+/g, ' ');
-
     // '" text "' -> '"text"'
     s = s.replace(/"\s*([^"\n]+?)\s*"/g, '"$1"');
 
-    s = s.replace(/^[\s,]+|[\s,]+$/g, '');
+    // ' ( TEXT ) ' -> '(TEXT)'
+    s = s.replace(/\(\s*([^)\n]+?)\s*\)/g, '($1)');
 
     return s.length ? s : null;
 }

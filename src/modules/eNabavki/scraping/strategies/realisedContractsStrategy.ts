@@ -4,6 +4,11 @@ import type {
     ScrapingStrategy,
 } from '../../../../shared/types/Strategy.type.js';
 import {
+    formatDate,
+    getCurrentDateString,
+} from '../../../../shared/util/dates.js';
+import { normaliseName } from '../../../../shared/util/names.js';
+import {
     type RealisedContractDTO,
     toRealisedContractDTOList,
 } from '../../data/dto/RealisedContract.dto.js';
@@ -15,8 +20,6 @@ import {
 } from '../../data/enums.js';
 import { insertRealisedContracts } from '../../data/queries/realisedContracts.query.js';
 import type { RealisedInsert, RealisedItem } from '../../data/schema.js';
-import { formatDate, getCurrentDateString } from '../../util/dates.js';
-import { normaliseName } from '../../util/names.js';
 import { buildBasePayload } from '../payloadBuilder.js';
 
 export const realisedContractsStrategy: ScrapingStrategy<
