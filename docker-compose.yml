@@ -10,7 +10,7 @@ services:
     secrets:
       - database_password
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
       - ./src/infrastructure/database/migrations:/docker-entrypoint-initdb.d:ro
     ports:
       - "127.0.0.1:5432:5432"
@@ -115,9 +115,8 @@ services:
         condition: service_healthy
 
   migrate:
-    image: node:24-alpine
     container_name: migrate
-    working_dir: /app
+    image: ghcr.io/nkvtd/ekonstat-api:latest
     command:
       - /bin/sh
       - -c
@@ -129,7 +128,6 @@ services:
         fi
         DB_PASSWORD="$$(cat /run/secrets/database_password | tr -d '\r\n')"
         export DATABASE_URL="postgresql://$${POSTGRES_USER:-postgres}:$${DB_PASSWORD}@postgres:5432/$${POSTGRES_DB:-ekonstat-db}"
-        npm ci
         exec npm run db:migrate
     profiles:
       - tools
@@ -139,8 +137,6 @@ services:
         POSTGRES_USER: ${POSTGRES_USER:-postgres}
     secrets:
       - database_password
-    volumes:
-      - ./:/app
     depends_on:
       postgres:
         condition: service_healthy
