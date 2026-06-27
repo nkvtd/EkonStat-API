@@ -21,9 +21,9 @@ BEGIN
 END;
 $$;--> statement-breakpoint
 
-CREATE INDEX "awarded_contracting_institution_trgm_idx" ON "e_nabavki"."awarded_contracts" USING gin (((public.my_unaccent(lower(coalesce("contracting_institution", '')))) gin_trgm_ops));--> statement-breakpoint
-CREATE INDEX "awarded_contractor_trgm_idx" ON "e_nabavki"."awarded_contracts" USING gin (((public.my_unaccent(lower(coalesce("contractor", '')))) gin_trgm_ops));--> statement-breakpoint
-CREATE INDEX "contractors_name_trgm_idx" ON "e_nabavki"."contractors" USING gin (((public.my_unaccent(lower(coalesce("name", '')))) gin_trgm_ops));--> statement-breakpoint
-CREATE INDEX "institutions_name_trgm_idx" ON "e_nabavki"."institutions" USING gin (((public.my_unaccent(lower(coalesce("name", '')))) gin_trgm_ops));--> statement-breakpoint
-CREATE INDEX "realised_contracting_institution_trgm_idx" ON "e_nabavki"."realised_contracts" USING gin (((public.my_unaccent(lower(coalesce("contracting_institution", '')))) gin_trgm_ops));--> statement-breakpoint
-CREATE INDEX "realised_contractor_trgm_idx" ON "e_nabavki"."realised_contracts" USING gin (((public.my_unaccent(lower(coalesce("contractor", '')))) gin_trgm_ops));
+CREATE INDEX "awarded_contracting_institution_trgm_idx" ON "e_nabavki"."awarded_contracts" USING gin ((public.my_unaccent(lower(coalesce("contracting_institution", '')))) gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "awarded_contractor_trgm_idx" ON "e_nabavki"."awarded_contracts" USING gin ((public.my_unaccent(lower(coalesce("contractor", '')))) gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "contractors_name_trgm_idx" ON "e_nabavki"."contractors" USING gin ((public.my_unaccent(lower(coalesce("name", '')))) gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "institutions_name_trgm_idx" ON "e_nabavki"."institutions" USING gin ((public.my_unaccent(lower(coalesce("name", '')))) gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "realised_contracting_institution_trgm_idx" ON "e_nabavki"."realised_contracts" USING gin ((public.my_unaccent(lower(coalesce("contracting_institution", '')))) gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "realised_contractor_trgm_idx" ON "e_nabavki"."realised_contracts" USING gin ((public.my_unaccent(lower(coalesce("contractor", '')))) gin_trgm_ops);
