@@ -40,7 +40,7 @@
     "croner": "^10.0.1",
     "cronstrue": "^3.21.0",
     "dotenv": "^17.4.2",
-    "drizzle-kit": "^0.31.8",
+    "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.12.27",
     "hono-rate-limiter": "^0.5.3",
