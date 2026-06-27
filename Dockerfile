@@ -23,4 +23,7 @@ RUN mkdir -p /app/logs
 
 EXPOSE 8080
 
+COPY --from=builder /app/drizzle.config.ts ./
+COPY --from=builder /app/src/infrastructure/database/migrations ./src/infrastructure/database/migrations
+
 CMD ["npm", "run", "start:app"]
