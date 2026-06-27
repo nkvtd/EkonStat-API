@@ -28,8 +28,8 @@
     "lint": "biome check src",
     "lint:fix": "biome check --write src",
     "format": "biome format --write src",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:generate": "drizzle-kit generate --config=./drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=./drizzle.config.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.6",
