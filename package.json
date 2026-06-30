@@ -38,7 +38,7 @@
     "axios": "^1.18.1",
     "axios-cookiejar-support": "^6.0.5",
     "croner": "^10.0.1",
-    "cronstrue": "^3.21.0",
+    "cronstrue": "^3.24.0",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.1",
