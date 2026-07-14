@@ -48,7 +48,7 @@
     "p-queue": "^9.3.1",
     "pg": "^8.22.0",
     "tough-cookie": "^6.0.2",
-    "tsc-alias": "^1.9.0",
+    "tsc-alias": "^1.9.1",
     "winston": "^3.19.0",
     "zod": "^4.4.3",
     "zod-validation-error": "^5.0.0"
