@@ -50,7 +50,7 @@
     "tough-cookie": "^6.0.2",
     "tsc-alias": "^1.9.2",
     "winston": "^3.19.0",
-    "zod": "^4.4.3",
+    "zod": "^4.5.2",
     "zod-validation-error": "^5.0.0"
   },
   "devDependencies": {
