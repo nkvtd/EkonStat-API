@@ -44,7 +44,7 @@
     "drizzle-orm": "^0.45.4",
     "hono": "^4.13.13",
     "hono-rate-limiter": "^0.5.4",
-    "p-map": "^7.1.0",
+    "p-map": "^7.1.1",
     "p-queue": "^9.3.3",
     "pg": "^8.23.1",
     "tough-cookie": "^6.0.2",
