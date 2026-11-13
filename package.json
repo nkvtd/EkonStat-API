@@ -37,7 +37,7 @@
     "@redtea/format-axios-error": "^2.1.1",
     "axios": "^1.21.0",
     "axios-cookiejar-support": "^6.0.5",
-    "croner": "^10.0.1",
+    "croner": "^11.0.0",
     "cronstrue": "^3.38.0",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.11",
